@@ -31,3 +31,4 @@
 /home/kostas/Desktop/PSP/PSP_Backend/PSPBackend/obj/Debug/net8.0/PSPBackend.pdb
 /home/kostas/Desktop/PSP/PSP_Backend/PSPBackend/obj/Debug/net8.0/PSPBackend.genruntimeconfig.cache
 /home/kostas/Desktop/PSP/PSP_Backend/PSPBackend/obj/Debug/net8.0/ref/PSPBackend.dll
+/home/kostas/Desktop/PSP/PSP_Backend/PSPBackend/obj/Debug/net8.0/PSPBackend.sourcelink.json
