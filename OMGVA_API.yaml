@@ -1,0 +1,2620 @@
+openapi: 3.0.0
+servers:
+  - description: OMGVA_API
+    url: 'https://virtserver.swaggerhub.com/OMGVA_PoS/OMGVA_API/1.0.0'
+info:
+  description: 'The OMGVA PoS system is designed to make service (food and beauty) sector operations more efficient. This system is made to be suitable for every kind of sector or service. It includes handling orders and reservations, inventory management, refunds and discounts logic. It also incorporates user management and sales transactions, as well as the legal part of taxes.'
+  version: 1.0.0
+  title: OMGVA PoS API
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: Product Categories
+  - name: Product
+  - name: Discount
+  - name: Tax
+  - name: Orders
+  - name: Order Items
+  - name: Reservations
+  - name: Payments
+  - name: Refunds
+  - name: Business
+  - name: Users
+security:
+  - bearerAuth: []
+paths:
+  /categories:
+    get:
+      summary: Retrieve a list of categories. Available for all users.
+      tags:
+        - Product Categories
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: A list of product categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductCategory'
+        '401':
+          description: Unauthorized
+        5XX:
+          description: Server Error
+  /category:
+    post:
+      summary: Create a new category. Available for Super Admin and Owner roles.
+      tags:
+        - Product Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the category
+                sort_priority:
+                  type: integer
+                  description: Priority for sorting categories
+      responses:
+        '201':
+          description: Product category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCategory'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+  '/category/{category_id}':
+    get:
+      summary: Retrieve details of a specific product category. Available for all users.
+      tags:
+        - Product Categories
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details of the requested product category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCategory'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Category Not Found
+        5XX:
+          description: Server Error
+    patch:
+      summary: Update an existing product category. Available for Super Admin and Owner roles.
+      tags:
+        - Product Categories
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sort_priority:
+                  type: integer
+                  description: New sort priority for the category
+                name:
+                  type: string
+                  description: New name for the category
+      responses:
+        '200':
+          description: Product category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCategory'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+    delete:
+      summary: Delete a specific category. Available for Super Admin and Owner roles.
+      tags:
+        - Product Categories
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        5XX:
+          description: Server Error
+  /products:
+    get:
+      summary: Retrieve a list of products. Available for all users.
+      tags:
+        - Product
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: type
+          in: query
+          required: false
+          schema:
+            enum:
+              - SERVICE
+              - ITEM
+              - SERVICE_CHARGE
+        - name: is_for_sale
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: stock_quantity_less_than
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: stock_quantity_more_than
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+  /product:
+    post:
+      summary: Create a new product. Available for Super Admin and Owner roles.
+      tags:
+        - Product
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+  '/product/{product_id}':
+    patch:
+      summary: Update a specific product. Available for Super Admin and Owner roles.
+      tags:
+        - Product
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+    delete:
+      summary: Delete a specific product. Available for Super Admin and Owner roles.
+      tags:
+        - Product
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+    get:
+      summary: Retrieve a specific product. Available for all users.
+      tags:
+        - Product
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullProduct'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+  /discounts:
+    get:
+      summary: Retrieve a list of discounts. Available for all users.
+      tags:
+        - Discount
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: valid_starting_from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: valid_atleast_until
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: code_hash
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Discount'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+  '/discount/{discount_id}':
+    get:
+      summary: Retrieve details of a specific discount. Available for all users.
+      tags:
+        - Discount
+      parameters:
+        - name: discount_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+    patch:
+      summary: Update a specific discount. Available for Super Admin and Owner roles.
+      tags:
+        - Discount
+      parameters:
+        - name: discount_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Discount'
+    delete:
+      summary: Delete a specific discount. Available for Super Admin and Owner roles.
+      tags:
+        - Discount
+      parameters:
+        - name: discount_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+  /discount:
+    post:
+      summary: Create a new discount. Available for Super Admin and Owner roles.
+      tags:
+        - Discount
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Discount'
+  /giftcards:
+    get:
+      summary: Retrieve a list of giftcards. Available for all users.
+      tags:
+        - Giftcard
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: original_amount_atleast
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: original_amount_lessthan
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: amount_left_atleast
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: amount_left_lessthan
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: valid_starting_from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: valid_atleast_until
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: code_hash
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Giftcard'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+    post:
+      summary: Create a new giftcard. Available for Super Admin and Owner roles.
+      tags:
+        - Giftcard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GiftcardRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Giftcard'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+  /giftcard/{giftcard_id}:
+    get:
+      summary: Get a specific giftcard. Available for all users.
+      tags:
+        - Giftcard
+      parameters:
+        - name: giftcard_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Giftcard'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+    patch:
+      summary: Update a specific giftcard. Available for Super Admin and Owner roles.
+      tags:
+        - Giftcard
+      parameters:
+        - name: giftcard_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount_left:
+                  type: number
+                valid_until:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Giftcard'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+  /tax:
+    get:
+      summary: Retrieve a list of tax rates. Available for all users.
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: is_valid
+          in: query
+          required: false
+          schema:
+            type: boolean
+      tags:
+        - Tax
+      responses:
+        '200':
+          description: A list of tax rates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tax'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+    post:
+      summary: Create a new tax rate. Available for Super Admins only.
+      tags:
+        - Tax
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the tax
+                tax_rate:
+                  type: number
+                  description: 'Tax rate as a percentage'
+      responses:
+        '201':
+          description: Tax rate created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+  '/tax/{tax_id}':
+    get:
+      summary: Retrieve details of a specific tax rate. Available for all users.
+      tags:
+        - Tax
+      parameters:
+        - name: tax_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details of the requested tax rate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+    patch:
+      summary: Modify or invalidate a tax. Available for Super Admins only.
+      tags:
+        - Tax
+      parameters:
+        - name: tax_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable Entity (WebDAV)
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tax'
+  /order:
+    get:
+      summary: Retrieve a list of orders. Available for all users.
+      tags:
+        - Orders
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: employee_id
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: all orders created by employee
+        - schema:
+            type: number
+          in: query
+          name: min_total_amount
+          description: all orders above certain total amount (price)
+        - schema:
+            type: number
+          in: query
+          name: max_total_amount
+          description: all orders below certain total amount (price)
+        - schema:
+            type: number
+          in: query
+          name: min_tip_amount
+          description: all orders above certain associated tip amount
+        - schema:
+            type: number
+          in: query
+          name: max_tip_amount
+          description: all orders below certain associated tip amount
+        - schema:
+            type: number
+          in: query
+          name: min_tax_amount
+          description: all orders above certain associated tax amount
+        - schema:
+            type: number
+          in: query
+          name: max_tax_amount
+          description: all orders below certain associated tax amount
+        - schema:
+            type: number
+          in: query
+          name: min_discount_amount
+          description: all orders above certain associated discount amount
+        - schema:
+            type: number
+          in: query
+          name: max_discount_amount
+          description: all orders below certain associated discount amount
+        - schema:
+            type: number
+          in: query
+          name: min_order_discount_percentage
+          description: all orders above certain associated order discount percentage
+        - schema:
+            type: number
+          in: query
+          name: max_order_discount_percentage
+          description: all orders below certain associated order discount percentage
+        - schema:
+            type: string
+          in: query
+          name: created_before
+          description: all orders created before certain date
+        - schema:
+            type: string
+          in: query
+          name: created_after
+          description: all orders created after certain date
+        - schema:
+            type: string
+          in: query
+          name: closed_before
+          description: all orders closed before certain date
+        - schema:
+            type: string
+          in: query
+          name: closed_after
+          description: all orders closed after certain date
+        - schema:
+            type: string
+          in: query
+          name: order_status
+          description: all orders that are OPEN/PENDING_PAYMENT/CLOSED
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+    post:
+      summary: Create a new order. Available for all users.
+      tags:
+        - Orders
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '401':
+          description: Unauthorized
+        5XX:
+          description: Server Error
+  '/order/{order_id}':
+    get:
+      summary: Retrieve details of a specific order. Available for all users.
+      tags:
+        - Orders
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullOrder'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+    delete:
+      summary: Delete a specific order. Available for all users.
+      tags:
+        - Orders
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '405':
+          description: 'Method Not Allowed: deleting this item is forbidden'
+        5XX:
+          description: Server Error
+  '/order/{order_id}/status':
+    post:
+      summary: Update the status of a specific order. Available for all users.
+      tags:
+        - Orders
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable Entity (WebDAV)
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  enum:
+                    - OPEN
+                    - PENDING_PAYMEN
+                    - CLOSED
+  '/order/{order_id}/orderItem':
+    post:
+      summary: Add a new item to a specific order. Available for all users.
+      tags:
+        - Order Items
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Item Added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderItemResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '405':
+          description: Method Not Allowed
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderItemRequest'
+    get:
+      summary: Retrieve a list of all order's items. Available for all users.
+      tags:
+        - Order Items
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderItemResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+  '/order/{order_id}/orderItem/{item_id}':
+    patch:
+      summary: Update a specific order item. Available for all users.
+      tags:
+        - Order Items
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderItemResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '405':
+          description: Method Not Allowed
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                variations:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Variation'
+    delete:
+      summary: Delete a specific order item. Available for all users.
+      tags:
+        - Order Items
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '405':
+          description: Method Not Allowed
+        5XX:
+          description: Server Error
+    get:
+      summary: Retrieve a specific order item. Available for all users.
+      tags:
+        - Order Items
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/xhtml+xml:
+              schema:
+                $ref: '#/components/schemas/OrderItemResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+  '/order/{order_id}/orderItem/{item_id}/discount':
+    post:
+      summary: Apply a discount to a specific order item. Available for all users.
+      tags:
+        - Order Items
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: discount_hash
+          in: query
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                discount_id:
+                  type: integer
+                discount_hash:
+                  type: integer
+      responses:
+        '200':
+          description: Discount Applied
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '405':
+          description: Method Not Allowed
+        5XX:
+          description: Server Error
+  /reservations:
+    get:
+      summary: Retrieve a list of reservations. Available for all users.
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: employee_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: client_name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: client_phone
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: created_before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: created_after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: last_modified_before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: last_modified_after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: appointment_time_before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: appointment_time_after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: duration_less_than
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: duration_more_than
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: false
+          schema:
+            enum:
+              - RESERVED
+              - CANCELLED
+              - DONE
+        - name: service_id
+          in: query
+          required: false
+          schema:
+            type: integer
+      tags:
+        - Reservations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+    post:
+      summary: Create a new reservation. Available for all users.
+      tags:
+        - Reservations
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Order item not found
+        '422':
+          description: Invalid reservation time, associated order item type or order status
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+  '/reservation/{reservation_id}':
+    get:
+      summary: Retrieve details of a specific reservation. Available for all users.
+      tags:
+        - Reservations
+      parameters:
+        - name: reservation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullReservation'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+    patch:
+      summary: Update a specific reservation. Available for all users.
+      tags:
+        - Reservations
+      parameters:
+        - name: reservation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '405':
+          description: Method Not Allowed
+        '422':
+          description: Unprocessable Entity (WebDAV)
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+  /payments:
+    get:
+      summary: Retrieve a list of payments. Available for all users.
+      tags:
+        - Payments
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: order_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: payment_method
+          in: query
+          required: false
+          schema:
+            enum:
+              - GIFTCARD
+              - CASH
+              - CARD
+        - name: created_before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: created_after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: status
+          in: query
+          required: false
+          schema:
+            enum:
+              - PENDING
+              - REJECTED
+              - DONE
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+    post:
+      summary: Create a new payment. Available for all users.
+      tags:
+        - Payments
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '405':
+          description: Method Not Allowed
+        '422':
+          description: Unprocessable Entity (WebDAV)
+        5XX:
+          description: Server Error
+  '/payments/{payment_id}':
+    get:
+      summary: Retrieve details of a specific payment. Available for all users.
+      tags:
+        - Payments
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+    patch:
+      summary: Update a specific payment. Available for Super Admins only.
+      tags:
+        - Payments
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '405':
+          description: Method Not Allowed
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+  '/payments/{payment_id}/giftcard/{giftcard_hash}':
+    post:
+      summary: Apply a giftcard to a specific payment. Available for all users.
+      tags:
+        - Payments
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: giftcard_hash
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Giftcard Applied
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '405':
+          description: Method Not Allowed
+        5XX:
+          description: Server Error
+  /refund:
+    post:
+      summary: Process a refund for an order. Available for all users.
+      tags:
+        - Refunds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+      responses:
+        '200':
+          description: Refund processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Order or order item not found
+        '422':
+          description: Unprocessable Entity (WebDAV)
+        5XX:
+          description: Server Error
+    get:
+      summary: Get a list of refunds. Available for all users.
+      tags:
+        - Refunds
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: order_item_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: returned_to_inventory
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: created_before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: created_after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Refund'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+  '/refund/{refund_id}':
+    get:
+      summary: Get a specific refund. Available for all users.
+      tags:
+        - Refunds
+      parameters:
+        - name: refund_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Order or order item not found
+        5XX:
+          description: Server Error
+  /business:
+    get:
+      summary: Retrieve a list of businesses.  Available for Super Admins only.
+      tags:
+        - Business
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: address
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: phone
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: currency
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Business'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+    post:
+      summary: Create a new business.  Available for Super Admins only.
+      tags:
+        - Business
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Business'
+  '/business/{business_id}':
+    get:
+      summary: Retrieve details of a specific business. Available for Super Admin and Owner roles.
+      tags:
+        - Business
+      parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+    patch:
+      summary: Update a specific business information. Available for Super Admins only.
+      tags:
+        - Business
+      parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Business'
+    delete:
+      summary: Delete a specific business. Available for Super Admins only.
+      tags:
+        - Business
+      parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+  /users:
+    get:
+      summary: Retrieve a list of users. Available for Super Admin and Owner roles.
+      tags:
+        - Users
+      parameters:
+        - name: page_nr
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: username
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: role
+          in: query
+          required: false
+          schema:
+            enum:
+              - OWNER
+              - SUPER_ADMIN
+              - EMPLOYEE
+        - name: last_withdrawn_timestamp_before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: last_withdrawn_timestamp_after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: status
+          in: query
+          required: false
+          schema:
+            enum:
+              - ACTIVE
+              - INACTIVE
+              - LEFT
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        5XX:
+          description: Server Error
+  /user:
+    post:
+      summary: Create a new user. Available for Super Admin and Owner roles.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: 'Bad request'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: Unprocessable Entity (WebDAV)
+        5XX:
+          description: Server Error
+  '/user/{user_id}':
+    get:
+      summary: Get user details by ID. Available for all users.
+      tags:
+        - Users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: ID of the user to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+        5XX:
+          description: Server Error
+    patch:
+      summary: Update a specific user. Available for all users.
+      tags:
+        - Users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable Entity (WebDAV)
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+    delete:
+      summary: Delete a specific user. Available for Super Admin and Owner roles.
+      tags:
+        - Users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        5XX:
+          description: Server Error
+  /user/login:
+    parameters: []
+    post:
+      summary: Login into an account. Available for all users.
+      tags:
+        - Users
+      responses:
+        '200':
+          description: OK
+          headers: {}
+        '400':
+          description: Bad Request
+        '422':
+          description: Unprocessable Entity (WebDAV)
+        5XX:
+          description: Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+  '/user/{user_id}/logout':
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Logout of an account. Available for all users.
+      tags:
+        - Users
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        5XX:
+          description: Server Error
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Order:
+      title: Order
+      type: object
+      description: A model representing object
+      properties:
+        id:
+          type: string
+        employee_id:
+          type: string
+        order_discount_percentage:
+          type: number
+        total_amount:
+          type: number
+        tax_amount:
+          type: number
+        total_discount_amount:
+          type: number
+        order_status:
+          enum:
+            - Open
+            - Pending_payment
+            - Closed
+        created_at:
+          type: string
+          format: date-time
+        closed_at:
+          type: string
+          format: date-time
+    FullOrder:
+      title: Full Order
+      type: object
+      description: A model representing object
+      properties:
+        id:
+          type: string
+        employee_id:
+          $ref: '#/components/schemas/UserResponse'
+        order_discount_percentage:
+          type: number
+        total_amount:
+          type: number
+        tax_amount:
+          type: number
+        total_discount_amount:
+          type: number
+        order_status:
+          enum:
+            - Open
+            - Pending_payment
+            - Closed
+        created_at:
+          type: string
+          format: date-time
+        closed_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items: 
+            $ref: '#/components/schemas/OrderItemResponse'
+
+    OrderItemRequest:
+      title: Order Item Request
+      type: object
+      required:
+        - order_id
+        - quantity
+        - product_id
+      properties:
+        order_id:
+          type: integer
+        product_id:
+          type: integer
+        quantity:
+          type: integer
+        variations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variation'
+    OrderItemResponse:
+      title: Order Item Response
+      type: object
+      properties:
+        id:
+          type: integer
+        order_id:
+          type: integer
+        product_id:
+          type: integer
+        reservation_id:
+          type: integer
+        quantity:
+          type: integer
+        variations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variation'
+        tax_id:
+          type: integer
+        product_price:
+          type: number
+        variation_price:
+          type: number
+        item_discount_amount:
+          type: number
+    ProductCategory:
+      type: object
+      title: Product Category
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the category
+        name:
+          type: string
+          description: 'Name of the category (e.g., foods, drinks, alcohol, massage)'
+        sort_priority:
+          type: integer
+          description: Priority for sorting categories
+    Tax:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 123
+          description: Unique identifier for the tax rate
+        name:
+          type: string
+          example: VAT
+          description: Name of the tax
+        tax_rate:
+          type: number
+          format: float
+          example: 21
+          description: 'Tax rate as a percentage (e.g., 21 for 21%)'
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-09T23:40:35.697Z'
+          description: The date and time the tax rate was created
+    RefundRequest:
+      type: object
+      title: Refund Request
+      properties:
+        order_item_id:
+          type: integer
+          description: Identifier for the order item to be refunded. Either this or `orderId` must be provided.
+        returned_to_inventory:
+          type: boolean
+          description: Boolean that tracks if the item was returned to inventory at the time of refund creation.
+        refunded_quantity:
+          type: integer
+          description:  The quantity of order items returned.
+        amount:
+          type: number
+          description: The amount of money returned as a result of the refund. Can be any arbitrary amount.
+        reason:
+          type: string
+          description: Optional reason for the refund.
+    Refund:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Identifier for the order to be refunded. Either this or `orderItemId` must be provided.
+        order_item_id:
+          type: integer
+          description: Identifier for the order item to be refunded. Either this or `orderId` must be provided.
+        returned_to_inventory:
+          type: boolean
+          description: Boolean that tracks if the item was returned to inventory at the time of refund creation.
+        refunded_quantity:
+          type: integer
+          description:  The quantity of order items returned.
+        amount:
+          type: number
+          description: The amount of money returned as a result of the refund. Can be any arbitrary amount.
+        reason:
+          type: string
+          description: Optional reason for the refund.
+        created_at:
+          type: string
+          format: date-time
+          description: The time when the refund was created.
+    Payment:
+      title: Payment
+      type: object
+      properties:
+        id:
+          type: integer
+        order_id:
+          type: integer
+        total_amount:
+          type: number
+        order_amount:
+          type: number
+        tip_amount:
+          type: number
+        payment_method:
+          enum:
+            - GIFTCARD
+            - CASH
+            - CARD
+        created_at:
+          type: string
+          format: date-time
+        status:
+          enum:
+            - PENDING
+            - REJECTED
+            - DONE
+        gift_card_id:
+          type: integer
+    Business:
+      title: Business
+      type: object
+      required:
+        - id
+        - name
+        - address
+        - phone
+        - email
+        - currency
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        currency:
+          type: string
+    UserRequest:
+      type: object
+      title: User Request
+      properties:
+        name:
+          type: string
+          description: Full name of the user.
+        username:
+          type: string
+          description: Unique username for the user.
+        role:
+          enum:
+            - OWNER
+            - SUPERADMIN
+            - EMPLOYEE
+          description: Role of the user in the system.
+        password:
+          type: string
+          description: Password for user authentication. This should be encrypted in practice.
+        status:
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - LEFT
+          description: Current user availability status.
+    UserResponse:
+      type: object
+      title: User Response
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the user.
+        name:
+          type: string
+          description: Full name of the user.
+        username:
+          type: string
+          description: Unique username for the user.
+        role:
+          type: string
+          enum:
+            - OWNER
+            - SUPERADMIN
+            - EMPLOYEE
+          description: Role of the user in the system.
+        tips_amount:
+          type: number
+          description: The amount of unwithdrawn tips the employee has collected.
+        last_withdrawn_timestamp:
+          type: string
+          format: date-time
+          description: The date and time when employee has last withdrawn the money from the tips amount.
+        status:
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - LEFT
+          description: Current user availability status.
+    Product:
+      title: Product
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price:
+          type: number
+        type:
+          enum:
+            - SERVICE
+            - ITEM
+            - SERVICE_CHARGE
+        is_for_sale:
+          type: boolean
+        tax_id:
+          type: integer
+        category_id:
+          type: integer
+        can_discount_be_applied:
+          type: boolean
+        stock_quantity:
+          type: integer
+        variations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variation'
+    FullProduct:
+      title: Full Product
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price:
+          type: number
+        type:
+          enum:
+            - SERVICE
+            - ITEM
+            - SERVICE_CHARGE
+        is_for_sale:
+          type: boolean
+        tax:
+          $ref: '#/components/schemas/Tax'
+        category:
+          $ref: '#/components/schemas/ProductCategory'
+        can_discount_be_applied:
+          type: boolean
+        stock_quantity:
+          type: integer
+        variations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variation'
+    Variation:
+      title: Variation
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+      description: Product variation
+    Discount:
+      title: Discount
+      type: object
+      required:
+        - id
+        - valid_from
+        - valid_until
+        - code_hash
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+        discount_type:
+          enum:
+            - ORDER
+            - PRODUCT
+        amount:
+          type: number
+        percentage:
+          type: number
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+        code_hash:
+          type: string
+    GiftcardRequest:
+      title: Giftcard Request
+      type: object
+      properties:
+        original_amount:
+          type: number
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+    Giftcard:
+      title: Giftcard
+      type: object
+      properties:
+        id:
+          type: integer
+        original_amount:
+          type: number
+        amount_left:
+          type: number
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+        code_hash:
+          type: string
+    Reservation:
+      title: Reservation
+      type: object
+      required:
+        - employee_id
+        - client_name
+        - client_phone
+        - created_at
+        - last_modified
+        - appointment_time
+        - duration
+        - status
+        - service_id
+      properties:
+        id:
+          type: integer
+        employee_id:
+          type: integer
+        client_name:
+          type: string
+        client_phone:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        last_modified:
+          type: string
+          format: date-time
+        appointment_time:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+        status:
+          enum:
+            - RESERVED
+            - CANCELLED
+            - DONE
+        service_id:
+          type: integer
+    FullReservation:
+      title: Full Reservation
+      type: object
+      required:
+        - employee_id
+        - client_name
+        - client_phone
+        - created_at
+        - last_modified
+        - appointment_time
+        - duration
+        - status
+        - service_id
+      properties:
+        id:
+          type: integer
+        employee:
+          $ref: '#/components/schemas/Variation'
+        client_name:
+          type: string
+        client_phone:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        last_modified:
+          type: string
+          format: date-time
+        appointment_time:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+        status:
+          enum:
+            - RESERVED
+            - CANCELLED
+            - DONE
+        service_id:
+          type: integer
+    ReservationRequest:
+      title: Reservation Request
+      type: object
+      properties:
+        order_item_id:
+          type: integer
+        client_name:
+          type: string
+        client_phone:
+          type: string
+        appointment_time:
+          type: string
+          format: date-time
+        service_id:
+          type: integer
