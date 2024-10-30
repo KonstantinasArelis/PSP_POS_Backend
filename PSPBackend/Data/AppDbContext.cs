@@ -9,8 +9,9 @@ public class AppDbContext : DbContext
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        Console.WriteLine("TESTAVIMAS: " + _config.GetConnectionString("DatabaseConnection"));
         optionsBuilder.UseSqlServer(_config.GetConnectionString("DatabaseConnection"));
     }
 
-    public DbSet<Order> Orders {get; set; }
+    public DbSet<OrderModel> _Order {get; set; }
 }
