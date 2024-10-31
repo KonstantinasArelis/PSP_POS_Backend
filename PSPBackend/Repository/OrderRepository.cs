@@ -10,7 +10,6 @@ public class OrderRepository
 
     }
 
-    // Store data
     public string AddOrder(OrderModel order)
     {
         _context._Order.Add(order);
@@ -18,15 +17,21 @@ public class OrderRepository
         return "201 all good"; 
     }
 
-    // Retrieve data
-    public List<OrderModel> GetAllProducts()
+    public IQueryable<OrderModel> GetOrders(int? employee_id, decimal? min_total_amount, 
+                                       decimal? max_total_amount, string order_status) 
     {
-        return _context._Order.ToList();
-    }
+        var query = _context._Order.AsQueryable();
 
-    // Example of retrieving a single product by ID
-    public OrderModel GetProductById(int id)
-    {
-        return _context._Order.Find(id); 
+        /*
+        if (employee_id.HasValue)
+            query = query.Where(o => o.id == employee_id.Value);
+        */
+        if (min_total_amount.HasValue)
+            query = query.Where(o => o.total_amount >= min_total_amount.Value);
+
+        if (max_total_amount.HasValue)
+            query = query.Where(o => o.total_amount <= max_total_amount.Value);
+
+        return query; 
     }
 }

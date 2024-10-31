@@ -9,7 +9,6 @@ public class AppDbContext : DbContext
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        Console.WriteLine("TESTAVIMAS: " + _config.GetConnectionString("DatabaseConnection"));
         optionsBuilder.UseSqlServer(_config.GetConnectionString("DatabaseConnection"));
     }
 

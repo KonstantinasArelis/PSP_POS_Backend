@@ -12,6 +12,7 @@ public class OrderController : ControllerBase
         _orderService = orderService;
     }
 
+    /*
     [HttpGet]
     public string Get()
     {
@@ -19,5 +20,23 @@ public class OrderController : ControllerBase
         string temp = _orderService.CreateOrder();
         Console.WriteLine("LOG: controller supposed to return: " + temp);
         return temp;
+    }
+    */
+    [HttpGet]
+    public List<OrderModel> Get(
+        [FromQuery] int page_nr, [FromQuery] int limit, [FromQuery] int? employee_id, 
+        [FromQuery] decimal? min_total_amount, [FromQuery] decimal? max_total_amount, 
+        [FromQuery] string order_status
+        ) 
+    {
+        Console.WriteLine("LOG: Order controller GET request");
+        List<OrderModel> gottenOrders = _orderService.GetOrders(
+            page_nr, limit, employee_id, 
+            min_total_amount, max_total_amount, 
+            order_status
+            );
+        Console.WriteLine("Sita grazins: " + gottenOrders.ToString());
+        Console.WriteLine("ARBA Sita grazins: " + gottenOrders);
+        return gottenOrders;
     }
 }
