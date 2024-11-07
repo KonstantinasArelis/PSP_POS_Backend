@@ -31,7 +31,7 @@ public class OrderRepository
 
         if (max_total_amount.HasValue)
             query = query.Where(o => o.total_amount <= max_total_amount.Value);
-
+        Console.WriteLine("LOG: repository returns orders");
         return query; 
     }
 }

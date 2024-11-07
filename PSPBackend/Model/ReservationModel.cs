@@ -2,16 +2,16 @@ namespace PSPBackend.Model
 {
     public class ReservationModel
     {
-        public int Id { get; set; }
-        public int BusinessId { get; set; }
-        public int EmployeeId { get; set; }
-        public string ClientName { get; set; }
-        public string ClientPhone { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime LastModified { get; set; }
-        public DateTime AppointmentTime { get; set; }
-        public int Duration { get; set; }
-        public int ReservationStatus { get; set; }
-        public int ServiceId { get; set; }
+        public int id { get; set; }
+        public int? business_id { get; set; }
+        public int? employee_id { get; set; }
+        public string? client_name { get; set; }
+        public string? client_phone { get; set; }
+        public DateTime? created_at { get; set; }
+        public DateTime? last_modified { get; set; }
+        public DateTime? appointment_time { get; set; }
+        public int? duration { get; set; }
+        public int? ReservationStatus { get; set; }
+        public int? service_id { get; set; }
     }
 }

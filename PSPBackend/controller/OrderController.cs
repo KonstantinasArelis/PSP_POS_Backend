@@ -35,8 +35,7 @@ public class OrderController : ControllerBase
             min_total_amount, max_total_amount, 
             order_status
             );
-        Console.WriteLine("Sita grazins: " + gottenOrders.ToString());
-        Console.WriteLine("ARBA Sita grazins: " + gottenOrders);
+        Console.WriteLine("LOG: Order controller returns orders: " + gottenOrders);
         return gottenOrders;
     }
 }

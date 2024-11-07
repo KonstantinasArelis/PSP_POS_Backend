@@ -11,7 +11,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("file:///*")
+        builder.WithOrigins("http://localhost:3000")
                .AllowAnyHeader()
                .AllowAnyMethod();
     });
@@ -22,6 +22,8 @@ builder.Services.AddControllers();
 builder.Services.AddTransient<AppDbContext>();
 builder.Services.AddTransient<OrderRepository>();
 builder.Services.AddTransient<OrderService>();
+builder.Services.AddTransient<ReservationRepository>();
+builder.Services.AddTransient<ReservationService>();
 
 var app = builder.Build();
 
@@ -34,7 +36,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-Console.WriteLine("LOGAI ATSIRANDA CIA");
+Console.WriteLine("BACKEND LOGAI ATSIRANDA CIA");
 
 app.UseHttpsRedirection();
 
