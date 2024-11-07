@@ -6,8 +6,7 @@ public class ReservationRepository
 
     public ReservationRepository(AppDbContext context)
     {
-        _context = context;  
-
+        _context = context;
     }
 
     public IQueryable<ReservationModel> GetReservation(int page_nr, int limit, int employee_id, 
@@ -20,5 +19,14 @@ public class ReservationRepository
 
         Console.WriteLine("LOG: repository returns Reservation");
         return query; 
+    }
+
+    public int CreateReservation(ReservationModel reservation)
+    {
+        Console.WriteLine("CreateReservation repository");
+        _context.Reservation.Add(reservation);
+        int rowsAffected = _context.SaveChanges(); 
+
+        return rowsAffected;
     }
 }

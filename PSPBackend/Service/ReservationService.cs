@@ -28,4 +28,21 @@ public class ReservationService
             var reservation = query.Skip(page_nr * pageSize).Take(pageSize).ToList();
             return reservation;
         }
+
+        public ReservationModel CreateReservation(ReservationModel reservation)
+        {
+            Console.WriteLine("CreateReservation service");
+
+            //remove later
+            reservation.business_id=null;
+            reservation.employee_id=null;
+            reservation.service_id=null;
+            reservation.ReservationStatus=null;
+            
+            if (_reservationRepository.CreateReservation(reservation) > 0){
+                return reservation;
+            } else{
+                return null;
+            }
+        }
 }

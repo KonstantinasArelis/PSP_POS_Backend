@@ -23,7 +23,7 @@ public class ReservationController : ControllerBase
     }
     */
     [HttpGet]
-    public List<ReservationModel> Get(
+    public IActionResult Get(
         [FromQuery] int page_nr, [FromQuery] int limit, [FromQuery] int employee_id, 
         [FromQuery] int client_name,[FromQuery] int  client_phone, [FromQuery] DateTime created_before, [FromQuery] DateTime created_after, 
         [FromQuery] DateTime last_modified_before, [FromQuery] DateTime last_modified_after,
@@ -40,6 +40,26 @@ public class ReservationController : ControllerBase
             duration_less_than, duration_more_than, status, service_id
             );
         Console.WriteLine("LOG: Reservation controller returns orders: " + gottenReservation);
-        return gottenReservation;
+        return Ok(gottenReservation);
+        //return NotFound();
+    }
+
+    [HttpPost]
+    public IActionResult CreateReservation([FromBody] ReservationModel reservation)
+    {
+        Console.WriteLine("CreateReservation controller");
+        if(!ModelState.IsValid)
+        {
+            Console.WriteLine("CreateReservation invalid model");
+            return BadRequest();
+        } else {
+            if (_reservationService.CreateReservation(reservation) != null){
+                return Ok();
+            } else {
+                return StatusCode(501); // code to be changed
+            }
+        }
+        
+        
     }
 }
