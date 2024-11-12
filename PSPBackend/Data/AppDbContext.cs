@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
         optionsBuilder.UseSqlServer(_config.GetConnectionString("DatabaseConnection"));
     }
 
-    public DbSet<OrderModel> _Order {get; set; }
+    public DbSet<OrderModel> Order {get; set; }
+    public DbSet<OrderStatusModel> OrderStatus {get; set; } 
     public DbSet<ReservationModel> Reservation {get; set; }
 }
