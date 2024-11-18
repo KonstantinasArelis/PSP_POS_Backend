@@ -54,7 +54,6 @@ public class DiscountRepository
         DiscountModel? oldDiscount = GetDiscount(discountId);
         if(oldDiscount != null) 
         {
-            oldDiscount.id = discount.id;
             oldDiscount.business_id = discount.business_id;
             oldDiscount.product_id = discount.product_id;
             oldDiscount.discount_type = discount.discount_type;

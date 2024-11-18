@@ -26,6 +26,8 @@ builder.Services.AddTransient<ReservationRepository>();
 builder.Services.AddTransient<ReservationService>();
 builder.Services.AddTransient<DiscountRepository>();
 builder.Services.AddTransient<DiscountService>();
+builder.Services.AddTransient<TaxRepository>();
+builder.Services.AddTransient<TaxService>();
 
 var app = builder.Build();
 
