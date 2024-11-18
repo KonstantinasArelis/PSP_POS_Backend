@@ -14,10 +14,10 @@ public class DiscountController : ControllerBase
 
     [HttpGet]
     public IActionResult GetDiscounts(
-        [FromQuery] int page_nr, [FromQuery] int limit, [FromQuery] int type, 
-        [FromQuery] DateTime? valid_starting_from, [FromQuery] DateTime? valid_atleast_until, 
-        [FromQuery] string? code_hash
-        ) // changing string to int for "type" so that it would correspond w/ data model, even though .yaml has it as string type
+        [FromQuery] int page_nr = 0, [FromQuery] int limit = 20, [FromQuery] int? type = null, 
+        [FromQuery] DateTime? valid_starting_from = null, [FromQuery] DateTime? valid_atleast_until = null, 
+        [FromQuery] string? code_hash = null
+        ) 
     {
         Console.WriteLine("LOG: Discount controller GET request");
         List<DiscountModel> gottenDiscounts = _discountService.GetDiscounts(
@@ -53,7 +53,7 @@ public class DiscountController : ControllerBase
     }
 
     [HttpPatch("{discountId}")]
-    public IActionResult UpdateDiscount(int discountId, [FromBody] DiscountModel updatedDiscount) 
+    public IActionResult UpdateDiscount(int discountId, [FromBody] DiscountModel updatedDiscount) // id should not be in this discount FromBody, case when foreign keys are not apprpriate should be considered
     {
         Console.WriteLine("LOG: Discount controller DELETE UpdateDiscount request");
         
@@ -63,7 +63,6 @@ public class DiscountController : ControllerBase
             return BadRequest("Invalid data provided.");
         }
 
-        // Call the service to update the discount
         var result = _discountService.UpdateDiscount(discountId, updatedDiscount);
         if (result == null)
         {
@@ -75,16 +74,18 @@ public class DiscountController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CreateDiscount([FromBody] DiscountModel discount)
-    {
-        Console.WriteLine("CreateDiscount controller");
-        if(!ModelState.IsValid) // what does this check??
+    public IActionResult CreateDiscount([FromBody] DiscountModel discount) // id should not be in this discount FromBody, case when foreign keys are not apprpriate should be considered
+    {    
+        if(!ModelState.IsValid) 
         {
             Console.WriteLine("CreateDiscount invalid model");
             return BadRequest();
         } else {
-            if (_discountService.CreateDiscount(discount) != null){
-                return Ok();
+            Console.WriteLine("CreateDiscount controller");
+
+            DiscountModel? createdDiscount = _discountService.CreateDiscount(discount);
+            if (createdDiscount != null){
+                return Ok(createdDiscount);
             } else {
                 return StatusCode(501); // http code to be changed(?)
             }

@@ -11,7 +11,7 @@ public class DiscountService
         }
 
         public List<DiscountModel> GetDiscounts(
-            int page_nr, int limit, int type, DateTime? valid_starting_from,
+            int page_nr, int limit, int? type, DateTime? valid_starting_from,
             DateTime? valid_atleast_until, string? code_hash
         )
         {
@@ -21,7 +21,7 @@ public class DiscountService
                 type, valid_starting_from, valid_atleast_until, code_hash
             ); 
 
-            var discounts = query.Skip(page_nr * limit).Take(limit).ToList(); // Why like this???
+            var discounts = query.Skip(page_nr * limit).Take(limit).ToList();
             return discounts;
         }
 

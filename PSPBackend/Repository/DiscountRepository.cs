@@ -8,30 +8,24 @@ public class DiscountRepository
     public DiscountRepository(AppDbContext context)
     {
         _context = context;  
-
     }
 
-    public IQueryable<DiscountModel> GetDiscounts(int type, DateTime? valid_starting_from,
+    public IQueryable<DiscountModel> GetDiscounts(int? type, DateTime? valid_starting_from,
             DateTime? valid_atleast_until, string? code_hash) // do we really need page_nr and limit? And how is this supposed to work??
     {
         var query = _context.Discount.AsQueryable();
 
-        query = query.Where(d => d.DiscountType == type);
+        if (type.HasValue)
+            query = query.Where(d => d.discount_type == type);
 
         if (valid_starting_from.HasValue)
-        {
-            query = query.Where(d => d.ValidFrom >= valid_starting_from.Value); // should it be like this??
-        }
+            query = query.Where(d => d.valid_from >= valid_starting_from.Value); // should it be like this??
         
         if (valid_atleast_until.HasValue)
-        {
-            query = query.Where(d => d.ValidUntil >= valid_atleast_until.Value); // should it be like this??
-        }
+            query = query.Where(d => d.valid_until >= valid_atleast_until.Value); // should it be like this??
 
         if (!string.IsNullOrEmpty(code_hash))
-        {
-            query = query.Where(d => d.CodeHash == code_hash);
-        }
+            query = query.Where(d => d.code_hash == code_hash);
 
         Console.WriteLine("LOG: repository returns Discounts");
         return query; 
@@ -39,7 +33,7 @@ public class DiscountRepository
 
     public DiscountModel? GetDiscount(int discountId)
     {
-        return _context.Discount.FirstOrDefault(d => d.Id == discountId);
+        return _context.Discount.FirstOrDefault(d => d.id == discountId);
     }
     
     public int DeleteDiscount(int discountId)
@@ -60,15 +54,15 @@ public class DiscountRepository
         DiscountModel? oldDiscount = GetDiscount(discountId);
         if(oldDiscount != null) 
         {
-            oldDiscount.Id = discount.Id;
-            oldDiscount.BusinessId = discount.BusinessId;
-            oldDiscount.ProductId = discount.ProductId;
-            oldDiscount.DiscountType = discount.DiscountType;
-            oldDiscount.Amount = discount.Amount;
-            oldDiscount.DiscountPercentage = discount.DiscountPercentage;  
-            oldDiscount.ValidFrom = discount.ValidFrom;  
-            oldDiscount.ValidUntil = discount.ValidUntil;  
-            oldDiscount.CodeHash = discount.CodeHash;  
+            oldDiscount.id = discount.id;
+            oldDiscount.business_id = discount.business_id;
+            oldDiscount.product_id = discount.product_id;
+            oldDiscount.discount_type = discount.discount_type;
+            oldDiscount.amount = discount.amount;
+            oldDiscount.discount_percentage = discount.discount_percentage;  
+            oldDiscount.valid_from = discount.valid_from;  
+            oldDiscount.valid_until = discount.valid_until;  
+            oldDiscount.code_hash = discount.code_hash;  
 
             int rowsAffected = _context.SaveChanges(); 
             return rowsAffected;
