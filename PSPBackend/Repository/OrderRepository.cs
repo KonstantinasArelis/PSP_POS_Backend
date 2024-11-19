@@ -108,7 +108,44 @@ public class OrderRepository
     {
         _context.Order.Entry(orderToUpdate).CurrentValues.SetValues(orderToUpdate);
         _context.SaveChanges();
-        Console.WriteLine("LOG: repository deletes an order");
+        Console.WriteLine("LOG: repository updates an order");
+        return;
+    }
+
+    public int? AddOrderItem(OrderItemModel item)
+    {
+        _context.OrderItem.Add(item);
+        _context.SaveChanges();
+        return _context.Order.Find(item.id)?.id; 
+    }
+
+    public OrderItemModel? GetOrderItem(int id)
+    {
+        return _context.OrderItem.First(o => o.id == id);
+    }
+
+    public IQueryable<OrderItemModel> GetOrderItems(int id)
+    {
+        return _context.OrderItem.Where(o => o.order_id == id);
+    }
+
+    public void DeleteOrderItem(int id)
+    {
+        OrderItemModel? order = _context.OrderItem.Find(id);
+        if (order != null)
+        {
+            _context.Remove(order);
+            _context.SaveChanges();
+            Console.WriteLine("LOG: repository deletes an order item");
+            return;
+        }
+    }
+
+    public void UpdateOrderItem(OrderItemModel itemToUpdate)
+    {
+        _context.OrderItem.Entry(itemToUpdate).CurrentValues.SetValues(itemToUpdate);
+        _context.SaveChanges();
+        Console.WriteLine("LOG: repository updates an order item");
         return;
     }
 }
