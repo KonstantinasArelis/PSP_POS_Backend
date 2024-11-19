@@ -15,4 +15,5 @@ public class AppDbContext : DbContext
     public DbSet<OrderModel> Order {get; set; }
     public DbSet<OrderStatusModel> OrderStatus {get; set; } 
     public DbSet<ReservationModel> Reservation {get; set; }
+    public DbSet<OrderItemModel> OrderItem {get; set; }
 }

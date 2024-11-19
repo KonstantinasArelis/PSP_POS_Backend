@@ -14,6 +14,7 @@ namespace PSPBackend.Model
         public int? order_status {get; set; }
         public DateTime? created_at {get; set; }
         public DateTime? closed_at {get; set; }
+        public ICollection<OrderItemModel> items {get; set; }
 
         public OrderModel()
         {

@@ -15,24 +15,17 @@ public class OrderService
             return _orderRepository.AddOrder(order);
         }
 
-        public List<OrderModel> GetOrders(
-            int page_nr = 0, int limit = 20, int? employee_id = null, 
-            decimal? min_total_amount = null, decimal? max_total_amount = null, 
-            string? order_status = null
-        )
+        public List<OrderModel> GetOrders(OrderArgumentModel arguments)
         {
             int? int_status = null;
-            if(order_status != null)
+            if(arguments.OrderStatus != null)
             {
-                Console.WriteLine("|||||||||||||||||||here||||||||||||||||||||||||||||||||||||||");
-                int_status = _orderStatusRepository.ConvertNameToCode(order_status);
+                int_status = _orderStatusRepository.ConvertNameToCode(arguments.OrderStatus);
             }
             Console.WriteLine("LOG: Order service GetOrders");
-            //List<OrderModel> orders = new List<OrderModel>();
-            var query = _orderRepository.GetOrders(employee_id, min_total_amount, 
-                                          max_total_amount, int_status); 
-            var pageSize = 20;
-            var orders = query.Skip(page_nr * pageSize).Take(pageSize).ToList();
+            var query = _orderRepository.GetOrders(arguments, int_status);
+            var pageSize = arguments.Limit ?? 20;
+            var orders = query.Skip((arguments.PageNr ?? 0) * pageSize).Take(pageSize).ToList();
             return orders;
         }
 

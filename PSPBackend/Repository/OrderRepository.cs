@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using PSPBackend.Model;
 
 public class OrderRepository
@@ -17,28 +18,78 @@ public class OrderRepository
         return _context.Order.Find(order.id)?.id; 
     }
 
-    public IQueryable<OrderModel> GetOrders(int? employee_id, decimal? min_total_amount, 
-                                       decimal? max_total_amount, int? order_status) 
+    public IQueryable<OrderModel> GetOrders(OrderArgumentModel arguments, int? orderStatus) 
     {
         var query = _context.Order.AsQueryable();
 
         
-        if (employee_id.HasValue)
-            query = query.Where(o => o.employee_id == employee_id.Value);
-        if (min_total_amount.HasValue)
-            query = query.Where(o => o.total_amount >= min_total_amount.Value);
-
-        if (max_total_amount.HasValue)
-            query = query.Where(o => o.total_amount <= max_total_amount.Value);
-        if (order_status.HasValue)
-            query = query.Where(o => o.order_status == order_status.Value);
+        if (arguments.EmployeeId.HasValue)
+            query = query.Where(o => o.employee_id == arguments.EmployeeId.Value);
+        if (arguments.MinTotalAmount.HasValue)
+            query = query.Where(o => o.total_amount >= arguments.MinTotalAmount.Value);
+        if (arguments.MaxTotalAmount.HasValue)
+            query = query.Where(o => o.total_amount <= arguments.MaxTotalAmount.Value);
+        /*if (arguments.MinTipAmount.HasValue)
+            query = query.Where(o => o >= arguments.MinTipAmount.Value);
+        if (arguments.MaxTipAmount.HasValue)
+            query = query.Where(o => o.total_amount <= arguments.MaxTipAmount.Value);*/
+        if (arguments.MinTaxAmount.HasValue)
+            query = query.Where(o => o.tax_amount >= arguments.MinTaxAmount.Value);
+        if (arguments.MaxTaxAmount.HasValue)
+            query = query.Where(o => o.tax_amount <= arguments.MaxTaxAmount.Value);
+        if (arguments.MinDiscountAmount.HasValue)
+            query = query.Where(o => o.total_discount_amount >= arguments.MinDiscountAmount.Value);
+        if (arguments.MaxDiscountAmount.HasValue)
+            query = query.Where(o => o.total_discount_amount <= arguments.MaxDiscountAmount.Value);
+        if (arguments.MinOrderDiscountPercentage.HasValue)
+            query = query.Where(o => o.order_discount_percentage >= arguments.MinOrderDiscountPercentage.Value);
+        if (arguments.MaxOrderDiscountPercentage.HasValue)
+            query = query.Where(o => o.order_discount_percentage <= arguments.MaxOrderDiscountPercentage.Value);
+        if (arguments.CreatedBefore!= null)
+        {
+            try
+            {
+                DateTime date = DateTime.Parse(arguments.CreatedBefore);
+                query = query.Where(o => o.created_at <= date);
+            }
+            catch(FormatException){}
+        }
+        if (arguments.CreatedAfter!= null)
+        {
+            try
+            {
+                DateTime date = DateTime.Parse(arguments.CreatedAfter);
+                query = query.Where(o => o.created_at >= date);
+            }
+            catch(FormatException){}
+        }
+        if (arguments.ClosedBefore!= null)
+        {
+            try
+            {
+                DateTime date = DateTime.Parse(arguments.ClosedBefore);
+                query = query.Where(o => o.closed_at <= date);
+            }
+            catch(FormatException){}
+        }
+        if (arguments.ClosedAfter!= null)
+        {
+            try
+            {
+                DateTime date = DateTime.Parse(arguments.ClosedAfter);
+                query = query.Where(o => o.closed_at >= date);
+            }
+            catch(FormatException){}
+        }
+        if (orderStatus.HasValue)
+            query = query.Where(o => o.order_status == orderStatus.Value);
         Console.WriteLine("LOG: repository returns orders");
         return query; 
     }
 
     public OrderModel? GetOrder(int id)
     {
-        return _context.Order.Find(id);
+        return _context.Order.Include(o => o.items).First(o => o.id == id);
     }
 
     public void DeleteOrder(int id)
