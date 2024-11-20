@@ -124,4 +124,11 @@ public class OrderController : ControllerBase
         _orderService.UpdateItem(order_id, item_id, body);
     }
 
+    [HttpDelete]
+    [Route("{order_id}/orderItem/{item_id}")]
+    public void DeleteOrderItem(int order_id, int item_id)
+    {
+        _orderService.DeleteItem(order_id, item_id);
+    }
+
 }

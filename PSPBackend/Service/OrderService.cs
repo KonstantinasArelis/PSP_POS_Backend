@@ -110,4 +110,13 @@ public class OrderService
                 }
             }
         }
+
+        public void DeleteItem(int orderId, int itemId)
+        {
+            OrderItemModel? item = _orderRepository.GetOrderItem(itemId);
+            if(item != null && item.order_id == orderId)
+            {
+                _orderRepository.DeleteOrderItem(itemId);
+            }
+        }
 }
