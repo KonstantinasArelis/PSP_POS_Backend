@@ -89,7 +89,7 @@ public class OrderRepository
 
     public OrderModel? GetOrder(int id)
     {
-        return _context.Order.Include(o => o.items).First(o => o.id == id);
+        return _context.Order.Include(o => o.items).FirstOrDefault(o => o.id == id);
     }
 
     public void DeleteOrder(int id)
@@ -121,7 +121,7 @@ public class OrderRepository
 
     public OrderItemModel? GetOrderItem(int id)
     {
-        return _context.OrderItem.First(o => o.id == id);
+        return _context.OrderItem.FirstOrDefault(o => o.id == id);
     }
 
     public IQueryable<OrderItemModel> GetOrderItems(int id)

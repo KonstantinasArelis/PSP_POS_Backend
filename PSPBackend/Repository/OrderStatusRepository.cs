@@ -22,12 +22,12 @@ public class OrderStatusRepository
 
     public OrderStatusModel? GetOrderStatusByName(string name)
     {
-        return _context.OrderStatus.Where(o => o.order_status_name == name).First();
+        return _context.OrderStatus.Where(o => o.order_status_name == name).FirstOrDefault();
     }
 
     public int? ConvertNameToCode(string name)
     {
         if(name == null) return null;
-        return _context.OrderStatus.Where(o => o.order_status_name == name).First().order_status_id;
+        return _context.OrderStatus.Where(o => o.order_status_name == name).FirstOrDefault()?.order_status_id;
     }
 }
