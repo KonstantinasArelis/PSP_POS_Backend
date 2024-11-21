@@ -18,4 +18,9 @@ public class OrderItemModel
     public decimal? item_discount_amount { get; set; }
     [JsonIgnore]
     public OrderModel Order { get; set; }
+
+    public OrderItemModel()
+    {
+        id = 0;
+    }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Microsoft.EntityFrameworkCore;
 using PSPBackend.Model;
 
@@ -11,11 +12,11 @@ public class OrderRepository
 
     }
 
-    public int? AddOrder(OrderModel order)
+    public OrderModel? AddOrder(OrderModel order)
     {
         _context.Order.Add(order);
         _context.SaveChanges();
-        return _context.Order.Find(order.id)?.id; 
+        return _context.Order.Find(order.id); 
     }
 
     public IQueryable<OrderModel> GetOrders(OrderArgumentModel arguments, int? orderStatus) 
@@ -112,11 +113,11 @@ public class OrderRepository
         return;
     }
 
-    public int? AddOrderItem(OrderItemModel item)
+    public OrderItemModel? AddOrderItem(OrderItemModel item)
     {
         _context.OrderItem.Add(item);
         _context.SaveChanges();
-        return _context.Order.Find(item.id)?.id; 
+        return _context.OrderItem.Find(item.id); 
     }
 
     public OrderItemModel? GetOrderItem(int id)
@@ -147,5 +148,15 @@ public class OrderRepository
         _context.SaveChanges();
         Console.WriteLine("LOG: repository updates an order item");
         return;
+    }
+
+    public int GetNewOrderId()
+    {
+        return _context.Order.Select(o => o.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
+    }
+    
+    public int GetNewOrderItemId()
+    {
+        return _context.OrderItem.Select(o => o.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
     }
 }

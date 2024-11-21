@@ -18,7 +18,7 @@ namespace PSPBackend.Model
 
         public OrderModel()
         {
-            id = 1;
+            id = 0;
             business_id = null;
             employee_id = null;
             order_status = null;

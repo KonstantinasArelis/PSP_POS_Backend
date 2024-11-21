@@ -70,11 +70,12 @@ public class OrderController : ControllerBase
     }
 
     [HttpPost]
-    public void CreateOrder([FromBody] string body)
+    public OrderModel? CreateOrder([FromBody] string body)
     {
         //string json_string = new StreamReader(Request.Body).ReadToEnd();
         OrderModel? order = JsonConvert.DeserializeObject<OrderModel>(body);
-        if(order != null) _orderService.CreateOrder(order);
+        if(order != null) return _orderService.CreateOrder(order);
+        return null;
     }
 
     [HttpPost]
@@ -94,12 +95,13 @@ public class OrderController : ControllerBase
 
     [HttpPost]
     [Route("{order_id}/orderItem")]
-    public void AddItemToOrder(int order_id, [FromBody] string body)
+    public OrderItemModel? AddItemToOrder(int order_id, [FromBody] string body)
     {
         //string json_string = new StreamReader(Request.Body).ReadToEnd();
         OrderItemModel? item = JsonConvert.DeserializeObject<OrderItemModel>(body);
         if(item != null)
-            _orderService.AddItem(order_id, item);
+            return _orderService.AddItem(order_id, item);
+        return null;
     }
 
     [HttpGet]

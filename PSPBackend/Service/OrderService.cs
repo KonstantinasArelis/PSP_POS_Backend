@@ -12,9 +12,14 @@ public class OrderService
             _orderStatusRepository = orderStatusRepository;
         }
 
-        public int? CreateOrder(OrderModel order)
+        public OrderModel? CreateOrder(OrderModel order)
         {
-            Console.WriteLine("LOG: service creates order");
+            Console.WriteLine("LOG: service creates order id is " + order.id);
+            if(order.id == 0)
+            {
+                order.id = _orderRepository.GetNewOrderId();
+            }
+            if(order.created_at == null) order.created_at = DateTime.Now;
             return _orderRepository.AddOrder(order);
         }
 
@@ -65,14 +70,16 @@ public class OrderService
             _orderRepository.DeleteOrder(orderId);
         }
 
-        public void AddItem(int orderId, OrderItemModel item)
+        public OrderItemModel? AddItem(int orderId, OrderItemModel item)
         {
             OrderModel? order = _orderRepository.GetOrder(orderId);
             if(order != null)
             {
+                if(item.id == 0) item.id = _orderRepository.GetNewOrderItemId();
                 item.order_id = orderId;
-                _orderRepository.AddOrderItem(item);
+                return _orderRepository.AddOrderItem(item);
             }
+            return null;
         }
 
         public IEnumerable<OrderItemModel> GetItems(int orderId, int? pageNr, int? limit)
