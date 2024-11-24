@@ -73,6 +73,7 @@ public class OrderController : ControllerBase
     public OrderModel? CreateOrder([FromBody] string body)
     {
         //string json_string = new StreamReader(Request.Body).ReadToEnd();
+        Console.WriteLine("|||||||||||||||||creting order");
         OrderModel? order = JsonConvert.DeserializeObject<OrderModel>(body);
         if(order != null) return _orderService.CreateOrder(order);
         return null;

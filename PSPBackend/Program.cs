@@ -21,7 +21,6 @@ builder.Services.AddControllers();
 
 builder.Services.AddTransient<AppDbContext>();
 builder.Services.AddTransient<OrderRepository>();
-builder.Services.AddTransient<OrderStatusRepository>();
 builder.Services.AddTransient<OrderService>();
 builder.Services.AddTransient<ReservationRepository>();
 builder.Services.AddTransient<ReservationService>();

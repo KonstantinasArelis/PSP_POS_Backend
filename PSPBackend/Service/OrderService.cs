@@ -5,11 +5,9 @@ using PSPBackend.Utility;
 public class OrderService
 {
         private readonly OrderRepository _orderRepository;
-        private readonly OrderStatusRepository _orderStatusRepository;
-        public OrderService(OrderRepository orderRepository, OrderStatusRepository orderStatusRepository)
+        public OrderService(OrderRepository orderRepository)
         {
             _orderRepository = orderRepository;  
-            _orderStatusRepository = orderStatusRepository;
         }
 
         public OrderModel? CreateOrder(OrderModel order)
@@ -25,13 +23,8 @@ public class OrderService
 
         public List<OrderModel> GetOrders(OrderArgumentModel arguments)
         {
-            int? int_status = null;
-            if(arguments.OrderStatus != null)
-            {
-                int_status = _orderStatusRepository.ConvertNameToCode(arguments.OrderStatus);
-            }
             Console.WriteLine("LOG: Order service GetOrders");
-            var query = _orderRepository.GetOrders(arguments, int_status);
+            var query = _orderRepository.GetOrders(arguments);
             var pageSize = arguments.Limit ?? 20;
             var orders = query.Skip((arguments.PageNr ?? 0) * pageSize).Take(pageSize).ToList();
             return orders;
@@ -53,12 +46,7 @@ public class OrderService
             {
                 try
                 {
-                    string status = obj.status;
-                    if(status != null)
-                    {
-                        int? order_status_int = _orderStatusRepository.ConvertNameToCode(status);
-                        order.order_status = order_status_int;
-                    }
+                    order.order_status = obj.status;
                     _orderRepository.UpdateOrder(order); 
                 }
                 catch(RuntimeBinderException){}

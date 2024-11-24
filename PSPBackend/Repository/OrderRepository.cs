@@ -19,7 +19,7 @@ public class OrderRepository
         return _context.Order.Find(order.id); 
     }
 
-    public IQueryable<OrderModel> GetOrders(OrderArgumentModel arguments, int? orderStatus) 
+    public IQueryable<OrderModel> GetOrders(OrderArgumentModel arguments) 
     {
         var query = _context.Order.AsQueryable();
 
@@ -82,8 +82,8 @@ public class OrderRepository
             }
             catch(FormatException){}
         }
-        if (orderStatus.HasValue)
-            query = query.Where(o => o.order_status == orderStatus.Value);
+        if (arguments.OrderStatus != null)
+            query = query.Where(o => o.order_status == arguments.OrderStatus);
         Console.WriteLine("LOG: repository returns orders");
         return query; 
     }
