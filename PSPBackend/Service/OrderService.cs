@@ -47,6 +47,7 @@ public class OrderService
                 try
                 {
                     order.order_status = obj.status;
+                    if(order.order_status == "CLOSED" && order.closed_at == null) order.closed_at = DateTime.Now; 
                     _orderRepository.UpdateOrder(order); 
                 }
                 catch(RuntimeBinderException){}

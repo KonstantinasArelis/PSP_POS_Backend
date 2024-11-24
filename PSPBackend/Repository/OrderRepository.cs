@@ -95,9 +95,16 @@ public class OrderRepository
 
     public void DeleteOrder(int id)
     {
-        OrderModel? order = _context.Order.Find(id);
+        OrderModel? order = _context.Order.Include(o => o.items).FirstOrDefault(o => o.id == id);
         if (order != null)
         {
+            if(order.items != null)
+            {
+                foreach(OrderItemModel item in order.items)
+                {
+                    _context.Remove(item);
+                }
+            }
             _context.Remove(order);
             _context.SaveChanges();
             Console.WriteLine("LOG: repository deletes an order");
