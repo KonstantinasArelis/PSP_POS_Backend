@@ -97,7 +97,7 @@ public class OrderService
                     string variationsReserialized = JsonConvert.SerializeObject(update.variations);
                     decimal variationPrice = 0;
                     foreach(Variation variation in update.variations){
-                        variationPrice += variation.Price;
+                        variationPrice += variation.price;
                     }
                     item.quantity = update.quantity;
                     item.variations = variationsReserialized;

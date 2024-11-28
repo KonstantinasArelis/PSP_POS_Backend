@@ -2,6 +2,6 @@ namespace PSPBackend.Utility;
 
 public class Variation
 {
-    public string Name {get;set;}
-    public int Price {get;set;}
+    public string name {get;set;}
+    public int price {get;set;}
 }
