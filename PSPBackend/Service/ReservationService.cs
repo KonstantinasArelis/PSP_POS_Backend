@@ -9,26 +9,19 @@ public class ReservationService
             _reservationRepository = reservationRepository;  
         }
 
-        public List<ReservationModel> GetReservation(
-            int page_nr, int limit, int? id, int? business_id , int? employee_id , 
-            string? client_name, string? client_phone, DateTime? created_before, DateTime? created_after, 
-            DateTime? last_modified_before, DateTime? last_modified_after,
-            DateTime? appointment_time_before, DateTime? appointment_time_after, 
-            int? duration_less_than, int? duration_more_than, int? status, int? service_id
-        )
+        public List<ReservationModel> GetReservations(ReservationGetDto reservationGetDto)
         {
-            
             Console.WriteLine("LOG: Reservation service GetReservation");
-            var query = _reservationRepository.GetReservation(
-                page_nr, limit, id, business_id, employee_id, 
-                client_name,client_phone, created_before, created_after, 
-                last_modified_before, last_modified_after,
-                appointment_time_before, appointment_time_after, 
-                duration_less_than, duration_more_than, status, service_id
-            ); 
+            var query = _reservationRepository.GetReservations(reservationGetDto); 
 
-            var reservation = query.Skip(page_nr * limit).Take(limit).ToList();
+            var reservation = query.Skip(reservationGetDto.page_nr * reservationGetDto.limit).Take(reservationGetDto.limit).ToList();
             return reservation;
+        }
+
+        public ReservationModel GetReservationById(int id)
+        {
+            ReservationModel gottenReservation = _reservationRepository.GetReservationById(id);
+            return gottenReservation;
         }
 
         public ReservationModel CreateReservation(ReservationModel reservation)
@@ -46,5 +39,11 @@ public class ReservationService
             } else{
                 return null;
             }
+        }
+
+        public int UpdateReservation(int id, ReservationPatchDto reservationDto)
+        {
+            int result = _reservationRepository.UpdateReservation(id, reservationDto);
+            return result;
         }
 }

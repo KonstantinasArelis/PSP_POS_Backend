@@ -6,10 +6,11 @@ using PSPBackend.Model;
 public class ReservationController : ControllerBase
 {
     private readonly ReservationService _reservationService;
-
+    
     public ReservationController(ReservationService reservationService)
     {
         _reservationService = reservationService;
+        
     }
 
     /*
@@ -23,32 +24,29 @@ public class ReservationController : ControllerBase
     }
     */
     [HttpGet]
-    public IActionResult Get(
-        [FromQuery] int page_nr =0, [FromQuery] int limit = 20, [FromQuery] int? id = null, [FromQuery] int? business_id = null, [FromQuery] int? employee_id = null, 
-        [FromQuery] string? client_name = null,[FromQuery] string?  client_phone = null, [FromQuery] DateTime? created_before = null, [FromQuery] DateTime? created_after = null, 
-        [FromQuery] DateTime? last_modified_before = null, [FromQuery] DateTime? last_modified_after = null,
-        [FromQuery] DateTime? appointment_time_before = null, [FromQuery] DateTime? appointment_time_after = null, 
-        [FromQuery] int? duration_less_than = null, [FromQuery] int? duration_more_than = null, [FromQuery] int? status = null, [FromQuery] int? service_id = null
-        ) 
-    {
-
+    public IActionResult GetReservations([FromQuery]ReservationGetDto reservationGetDto) 
+    {        
         //separate this into validator later
-        if(limit>100)
+        if(reservationGetDto.limit>100)
         {
             return BadRequest();
         }
         Console.WriteLine("LOG: Reservation controller GET request");
-        List<ReservationModel> gottenReservation = _reservationService.GetReservation(
-                page_nr, limit, id, business_id, employee_id, 
-                client_name,client_phone, created_before, created_after, 
-                last_modified_before, last_modified_after,
-                appointment_time_before, appointment_time_after, 
-                duration_less_than, duration_more_than, status, service_id
-            );
+        List<ReservationModel> gottenReservation = _reservationService.GetReservations(reservationGetDto);
         Console.WriteLine("LOG: Reservation controller returns orders: " + gottenReservation);
         return Ok(gottenReservation);
         //return NotFound();
     }
+
+    [HttpGet("{id}")]
+    public IActionResult GetReservationById(int id)
+    {
+        Console.WriteLine("TESTTTTTTTTTTTTT");
+        ReservationModel gottenReservation = _reservationService.GetReservationById(id);
+        return Ok(gottenReservation);
+    }
+
+
 
     [HttpPost]
     public IActionResult CreateReservation([FromBody] ReservationModel reservation)
@@ -65,7 +63,20 @@ public class ReservationController : ControllerBase
                 return StatusCode(501); // http code to be changed
             }
         }
-        
-        
+    }
+
+    [HttpPatch("{id}")]
+    public IActionResult UpdateReservation(int id, [FromBody] ReservationPatchDto reservationDto)
+    {
+        int result = _reservationService.UpdateReservation(id, reservationDto);
+
+        if(result == 1){
+            return Ok();
+        }
+        else if(result == 0){
+            return NotFound();
+        } else {
+            return StatusCode(501); // http code to be changed
+        }
     }
 }
