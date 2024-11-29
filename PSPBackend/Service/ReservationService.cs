@@ -9,13 +9,19 @@ public class ReservationService
             _reservationRepository = reservationRepository;  
         }
 
-        public List<ReservationModel> GetReservation(ReservationGetDto reservationGetDto)
+        public List<ReservationModel> GetReservations(ReservationGetDto reservationGetDto)
         {
             Console.WriteLine("LOG: Reservation service GetReservation");
-            var query = _reservationRepository.GetReservation(reservationGetDto); 
+            var query = _reservationRepository.GetReservations(reservationGetDto); 
 
             var reservation = query.Skip(reservationGetDto.page_nr * reservationGetDto.limit).Take(reservationGetDto.limit).ToList();
             return reservation;
+        }
+
+        public ReservationModel GetReservationById(int id)
+        {
+            ReservationModel gottenReservation = _reservationRepository.GetReservationById(id);
+            return gottenReservation;
         }
 
         public ReservationModel CreateReservation(ReservationModel reservation)
@@ -33,5 +39,11 @@ public class ReservationService
             } else{
                 return null;
             }
+        }
+
+        public int UpdateReservation(int id, ReservationPatchDto reservationDto)
+        {
+            int result = _reservationRepository.UpdateReservation(id, reservationDto);
+            return result;
         }
 }

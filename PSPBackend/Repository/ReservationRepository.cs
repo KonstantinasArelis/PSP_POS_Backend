@@ -9,7 +9,7 @@ public class ReservationRepository
         _context = context;
     }
 
-    public IQueryable<ReservationModel> GetReservation(ReservationGetDto reservationGetDto) 
+    public IQueryable<ReservationModel> GetReservations(ReservationGetDto reservationGetDto) 
     {
         var query = _context.Reservation.AsQueryable();
 
@@ -79,6 +79,12 @@ public class ReservationRepository
         return query; 
     }
 
+    public ReservationModel GetReservationById(int id)
+    {
+        ReservationModel? gottenReservation = _context.Reservation.Single(c => c.id == id);
+        return gottenReservation;
+    }
+
     public int CreateReservation(ReservationModel reservation)
     {
         Console.WriteLine("CreateReservation repository");
@@ -86,5 +92,34 @@ public class ReservationRepository
         int rowsAffected = _context.SaveChanges(); 
 
         return rowsAffected;
+    }
+
+    public int UpdateReservation(int id, ReservationPatchDto reservationDto)
+    {
+        ReservationModel? reservation = GetReservationById(id);
+        if(reservation == null)
+        {
+            return 0;
+        } else {
+            if(reservationDto.id != null)
+            {
+                reservation.id = reservationDto.id;
+            }
+            if(reservationDto.id != null)
+            {
+                reservation.id = reservationDto.id;
+            }
+
+            foreach (var property in typeof(ReservationPatchDto).GetProperties())
+            {
+                var dtoValue = property.GetValue(reservationDto);
+                if(dtoValue != null)
+                {
+                    var reservationProperty = typeof(ReservationModel).GetProperty(property.Name);
+                    reservationProperty?.SetValue(reservation, dtoValue);
+                }
+            }
+            return _context.SaveChanges();
+        }
     }
 }

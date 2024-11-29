@@ -24,7 +24,7 @@ public class ReservationController : ControllerBase
     }
     */
     [HttpGet]
-    public IActionResult Get([FromQuery]ReservationGetDto reservationGetDto) 
+    public IActionResult GetReservations([FromQuery]ReservationGetDto reservationGetDto) 
     {        
         //separate this into validator later
         if(reservationGetDto.limit>100)
@@ -32,12 +32,21 @@ public class ReservationController : ControllerBase
             return BadRequest();
         }
         Console.WriteLine("LOG: Reservation controller GET request");
-        List<ReservationModel> gottenReservation = _reservationService.GetReservation(reservationGetDto);
+        List<ReservationModel> gottenReservation = _reservationService.GetReservations(reservationGetDto);
         Console.WriteLine("LOG: Reservation controller returns orders: " + gottenReservation);
         return Ok(gottenReservation);
         //return NotFound();
-        
     }
+
+    [HttpGet("{id}")]
+    public IActionResult GetReservationById(int id)
+    {
+        Console.WriteLine("TESTTTTTTTTTTTTT");
+        ReservationModel gottenReservation = _reservationService.GetReservationById(id);
+        return Ok(gottenReservation);
+    }
+
+
 
     [HttpPost]
     public IActionResult CreateReservation([FromBody] ReservationModel reservation)
@@ -54,7 +63,20 @@ public class ReservationController : ControllerBase
                 return StatusCode(501); // http code to be changed
             }
         }
-        
-        
+    }
+
+    [HttpPatch("{id}")]
+    public IActionResult UpdateReservation(int id, [FromBody] ReservationPatchDto reservationDto)
+    {
+        int result = _reservationService.UpdateReservation(id, reservationDto);
+
+        if(result == 1){
+            return Ok();
+        }
+        else if(result == 0){
+            return NotFound();
+        } else {
+            return StatusCode(501); // http code to be changed
+        }
     }
 }
