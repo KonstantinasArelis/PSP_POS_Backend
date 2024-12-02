@@ -49,7 +49,7 @@ public class ReservationController : ControllerBase
 
 
     [HttpPost]
-    public IActionResult CreateReservation([FromBody] ReservationModel reservation)
+    public IActionResult CreateReservation([FromBody] ReservationCreateDto reservation)
     {
         Console.WriteLine("CreateReservation controller");
         if(!ModelState.IsValid)

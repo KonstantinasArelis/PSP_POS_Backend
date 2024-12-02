@@ -1,6 +1,6 @@
 public class ReservationPatchDto
 {
-    public int? id { get; set; }
+    public int id { get; set; }
     public int? business_id { get; set; }
     public int? employee_id { get; set; }
     public string? client_name { get; set; }

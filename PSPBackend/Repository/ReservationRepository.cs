@@ -122,4 +122,9 @@ public class ReservationRepository
             return _context.SaveChanges();
         }
     }
+
+    public int GetNewOrderId()
+    {
+        return _context.Reservation.Select(o => o.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
+    }
 }
