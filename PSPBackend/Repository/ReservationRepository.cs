@@ -97,29 +97,30 @@ public class ReservationRepository
     public int UpdateReservation(int id, ReservationPatchDto reservationDto)
     {
         ReservationModel? reservation = GetReservationById(id);
+        
         if(reservation == null)
         {
+            Console.WriteLine("Reservation Repository: Reservation that was supposed to be updated was not found");
             return 0;
         } else {
-            if(reservationDto.id != null)
-            {
-                reservation.id = reservationDto.id;
-            }
-            if(reservationDto.id != null)
-            {
-                reservation.id = reservationDto.id;
-            }
 
             foreach (var property in typeof(ReservationPatchDto).GetProperties())
             {
                 var dtoValue = property.GetValue(reservationDto);
                 if(dtoValue != null)
                 {
+                    
                     var reservationProperty = typeof(ReservationModel).GetProperty(property.Name);
+                    Console.WriteLine("TAESSTT: Changing field " + property.Name + " to " + dtoValue);
                     reservationProperty?.SetValue(reservation, dtoValue);
                 }
             }
             return _context.SaveChanges();
         }
+    }
+
+    public int GetNewOrderId()
+    {
+        return _context.Reservation.Select(o => o.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
     }
 }
