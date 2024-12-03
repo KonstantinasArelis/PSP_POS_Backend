@@ -24,6 +24,8 @@ builder.Services.AddTransient<OrderRepository>();
 builder.Services.AddTransient<OrderService>();
 builder.Services.AddTransient<ReservationRepository>();
 builder.Services.AddTransient<ReservationService>();
+builder.Services.AddTransient<BusinessRepository>();
+builder.Services.AddTransient<BusinessService>();
 
 var app = builder.Build();
 
