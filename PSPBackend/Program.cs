@@ -28,6 +28,8 @@ builder.Services.AddTransient<BusinessRepository>();
 builder.Services.AddTransient<BusinessService>();
 builder.Services.AddTransient<PaymentService>();
 builder.Services.AddTransient<PaymentRepository>();
+builder.Services.AddTransient<GiftCardRepository>();
+builder.Services.AddTransient<GiftCardService>();
 
 var app = builder.Build();
 
