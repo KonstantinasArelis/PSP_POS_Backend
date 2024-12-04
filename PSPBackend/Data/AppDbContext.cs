@@ -16,4 +16,5 @@ public class AppDbContext : DbContext
     public DbSet<ReservationModel> Reservation {get; set; }
     public DbSet<OrderItemModel> OrderItem {get; set; }
     public DbSet<BusinessModel> Business {get; set; }
+    public DbSet<RefundModel> Refund {get; set; }
 }
