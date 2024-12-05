@@ -9,78 +9,80 @@ public class ReservationRepository
         _context = context;
     }
 
-    public IQueryable<ReservationModel> GetReservation(int page_nr, int limit, int? id, int? business_id, int? employee_id, 
-            string? client_name, string?  client_phone, DateTime? created_before, DateTime? created_after, 
-            DateTime? last_modified_before, DateTime? last_modified_after,
-            DateTime? appointment_time_before, DateTime? appointment_time_after, 
-            int? duration_less_than, int? duration_more_than, int? status, int? service_id) 
+    public IQueryable<ReservationModel> GetReservations(ReservationGetDto reservationGetDto) 
     {
         var query = _context.Reservation.AsQueryable();
 
 
-        if(id != null)
+        if(reservationGetDto.id != null)
         {
-            query = query.Where(c => c.id == id);
+            query = query.Where(c => c.id == reservationGetDto.id);
         }
-        if(business_id != null)
+        if(reservationGetDto.business_id != null)
         {
-            query = query.Where(c => c.business_id == business_id);
+            query = query.Where(c => c.business_id == reservationGetDto.business_id);
         }
-        if(employee_id != null)
+        if(reservationGetDto.employee_id != null)
         {
-            query = query.Where(c => c.employee_id == employee_id);
+            query = query.Where(c => c.employee_id == reservationGetDto.employee_id);
         }
-        if(client_name != null)
+        if(reservationGetDto.client_name != null)
         {
-            query = query.Where(c => c.client_name == client_name);
+            query = query.Where(c => c.client_name == reservationGetDto.client_name);
         }
-        if(client_phone != null)
+        if(reservationGetDto.client_phone != null)
         {
-            query = query.Where(c => c.client_phone == client_phone);
+            query = query.Where(c => c.client_phone == reservationGetDto.client_phone);
         }
-        if(created_before != null)
+        if(reservationGetDto.created_before != null)
         {
-            query = query.Where(c => c.created_at < created_before);
+            query = query.Where(c => c.created_at < reservationGetDto.created_before);
         }
-        if(created_after != null)
+        if(reservationGetDto.created_after != null)
         {
-            query = query.Where(c => c.created_at > created_after);
+            query = query.Where(c => c.created_at > reservationGetDto.created_after);
         }
-        if(created_before != null)
+        if(reservationGetDto.created_before != null)
         {
-            query = query.Where(c => c.last_modified < last_modified_before);
+            query = query.Where(c => c.last_modified < reservationGetDto.last_modified_before);
         }
-        if(created_after != null)
+        if(reservationGetDto.created_after != null)
         {
-            query = query.Where(c => c.last_modified > last_modified_after);
+            query = query.Where(c => c.last_modified > reservationGetDto.last_modified_after);
         }
-        if(appointment_time_before != null)
+        if(reservationGetDto.appointment_time_before != null)
         {
-            query = query.Where(c => c.appointment_time < appointment_time_before);
+            query = query.Where(c => c.appointment_time < reservationGetDto.appointment_time_before);
         }
-        if(appointment_time_after != null)
+        if(reservationGetDto.appointment_time_after != null)
         {
-            query = query.Where(c => c.appointment_time > appointment_time_after);
+            query = query.Where(c => c.appointment_time > reservationGetDto.appointment_time_after);
         }
-        if(duration_less_than != null)
+        if(reservationGetDto.duration_less_than != null)
         {
-            query = query.Where(c => c.duration < duration_less_than);
+            query = query.Where(c => c.duration < reservationGetDto.duration_less_than);
         }
-        if(duration_more_than != null)
+        if(reservationGetDto.duration_more_than != null)
         {
-            query = query.Where(c => c.duration > duration_more_than);
+            query = query.Where(c => c.duration > reservationGetDto.duration_more_than);
         }
-        if(status != null)
+        if(reservationGetDto.status != null)
         {
-            query = query.Where(c => c.ReservationStatus == status);
+            query = query.Where(c => c.ReservationStatus == reservationGetDto.status);
         }
-        if(service_id != null)
+        if(reservationGetDto.service_id != null)
         {
-            query = query.Where(c => c.service_id == service_id);
+            query = query.Where(c => c.service_id == reservationGetDto.service_id);
         }
 
         Console.WriteLine("LOG: repository returns Reservation");
         return query; 
+    }
+
+    public ReservationModel GetReservationById(int id)
+    {
+        ReservationModel? gottenReservation = _context.Reservation.Single(c => c.id == id);
+        return gottenReservation;
     }
 
     public int CreateReservation(ReservationModel reservation)
@@ -90,5 +92,35 @@ public class ReservationRepository
         int rowsAffected = _context.SaveChanges(); 
 
         return rowsAffected;
+    }
+
+    public int UpdateReservation(int id, ReservationPatchDto reservationDto)
+    {
+        ReservationModel? reservation = GetReservationById(id);
+        
+        if(reservation == null)
+        {
+            Console.WriteLine("Reservation Repository: Reservation that was supposed to be updated was not found");
+            return 0;
+        } else {
+
+            foreach (var property in typeof(ReservationPatchDto).GetProperties())
+            {
+                var dtoValue = property.GetValue(reservationDto);
+                if(dtoValue != null)
+                {
+                    
+                    var reservationProperty = typeof(ReservationModel).GetProperty(property.Name);
+                    Console.WriteLine("TAESSTT: Changing field " + property.Name + " to " + dtoValue);
+                    reservationProperty?.SetValue(reservation, dtoValue);
+                }
+            }
+            return _context.SaveChanges();
+        }
+    }
+
+    public int GetNewOrderId()
+    {
+        return _context.Reservation.Select(o => o.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
     }
 }

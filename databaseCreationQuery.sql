@@ -142,15 +142,14 @@ INSERT INTO DiscountType (discount_type_id, discount_type_name) VALUES
     (2, 'ORDER_ITEM');
 
 CREATE TABLE OrderStatus (
-    order_status_id INT,
-    order_status_name VARCHAR(20),
-    PRIMARY KEY (order_status_id) 
+    order_status VARCHAR(20),
+    PRIMARY KEY (order_status) 
 )
 
-INSERT INTO OrderStatus (order_status_id, order_status_name) VALUES
-    (1, 'OPEN'),
-    (2, 'PENDING_PAYMENT'),
-    (3, 'CLOSED');
+INSERT INTO OrderStatus (order_status) VALUES
+    ('OPEN'),
+    ('PENDING_PAYMENT'),
+    ('CLOSED');
 
 CREATE TABLE PaymentMethod (
     payment_method_id INT,

@@ -3,48 +3,65 @@ using PSPBackend.Model;
 public class ReservationService
 {
         private readonly ReservationRepository _reservationRepository;
+        private readonly OrderService _orderService;
 
-        public ReservationService(ReservationRepository reservationRepository)
+        public ReservationService(ReservationRepository reservationRepository, OrderService orderService)
         {
-            _reservationRepository = reservationRepository;  
+            _reservationRepository = reservationRepository;
+            _orderService = orderService;
         }
 
-        public List<ReservationModel> GetReservation(
-            int page_nr, int limit, int? id, int? business_id , int? employee_id , 
-            string? client_name, string? client_phone, DateTime? created_before, DateTime? created_after, 
-            DateTime? last_modified_before, DateTime? last_modified_after,
-            DateTime? appointment_time_before, DateTime? appointment_time_after, 
-            int? duration_less_than, int? duration_more_than, int? status, int? service_id
-        )
+        public List<ReservationModel> GetReservations(ReservationGetDto reservationGetDto)
         {
-            
             Console.WriteLine("LOG: Reservation service GetReservation");
-            var query = _reservationRepository.GetReservation(
-                page_nr, limit, id, business_id, employee_id, 
-                client_name,client_phone, created_before, created_after, 
-                last_modified_before, last_modified_after,
-                appointment_time_before, appointment_time_after, 
-                duration_less_than, duration_more_than, status, service_id
-            ); 
+            var query = _reservationRepository.GetReservations(reservationGetDto); 
 
-            var reservation = query.Skip(page_nr * limit).Take(limit).ToList();
+            var reservation = query.Skip(reservationGetDto.page_nr * reservationGetDto.limit).Take(reservationGetDto.limit).ToList();
             return reservation;
         }
 
-        public ReservationModel CreateReservation(ReservationModel reservation)
+        public ReservationModel GetReservationById(int id)
+        {
+            ReservationModel gottenReservation = _reservationRepository.GetReservationById(id);
+            return gottenReservation;
+        }
+
+        public ReservationModel CreateReservation(ReservationCreateDto reservation)
         {
             Console.WriteLine("CreateReservation service");
+            ReservationModel newReservation = new ReservationModel();
+
+            newReservation.id = _reservationRepository.GetNewOrderId();
+            newReservation.client_name = reservation.client_name;
+            newReservation.client_phone = reservation.client_phone;
+            newReservation.appointment_time = reservation.appointment_time;
+            newReservation.duration = reservation.duration;
+            newReservation.service_id = reservation.service_id;
 
             //remove later
-            reservation.business_id=null;
-            reservation.employee_id=null;
-            reservation.service_id=null;
-            reservation.ReservationStatus=null;
+            newReservation.business_id=null;
+            newReservation.employee_id=null;
+            newReservation.service_id=null;
+            newReservation.ReservationStatus=null;
             
-            if (_reservationRepository.CreateReservation(reservation) > 0){
-                return reservation;
+            if (_reservationRepository.CreateReservation(newReservation) > 0){
+                OrderModel newOrder = new OrderModel();
+                newOrder.id = 0;
+                _orderService.CreateOrder(newOrder);
+
+                OrderItemModel newOrderItem = new OrderItemModel();
+                newOrderItem.reservation_id = newReservation.id;
+                _orderService.AddItem(newOrder.id, newOrderItem);
+
+                return newReservation;
             } else{
                 return null;
             }
+        }
+
+        public int UpdateReservation(int id, ReservationPatchDto reservationDto)
+        {
+            int result = _reservationRepository.UpdateReservation(id, reservationDto);
+            return result;
         }
 }

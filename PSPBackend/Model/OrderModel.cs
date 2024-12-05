@@ -11,13 +11,14 @@ namespace PSPBackend.Model
         public decimal? total_amount {get; set; }
         public decimal? tax_amount  {get; set; }
         public decimal? total_discount_amount {get; set; }
-        public int? order_status {get; set; }
+        public string? order_status {get; set; }
         public DateTime? created_at {get; set; }
         public DateTime? closed_at {get; set; }
+        public ICollection<OrderItemModel> items {get; set; }
 
         public OrderModel()
         {
-            id = 1;
+            id = 0;
             business_id = null;
             employee_id = null;
             order_status = null;
