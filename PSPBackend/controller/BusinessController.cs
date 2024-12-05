@@ -39,9 +39,9 @@ public class BusinessController : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    public IActionResult updateBusiness ([FromRoute] int businessId, [FromBody] BusinessUpdateDto updatedBusinessDto)
+    public IActionResult updateBusiness ([FromRoute] int id, [FromBody] BusinessUpdateDto updatedBusinessDto)
     {
-        var updatedBusiness = _businessService.updateBusiness(businessId, updatedBusinessDto);
+        var updatedBusiness = _businessService.updateBusiness(id, updatedBusinessDto);
 
         return Ok(updatedBusiness);
     }

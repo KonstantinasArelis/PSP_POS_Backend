@@ -16,6 +16,7 @@ public class PaymentRepository
 
         if (paymentGetDto.order_id != null)
             query = query.Where(p => p.order_id == paymentGetDto.order_id);
+            /*
         if (paymentGetDto.payment_method != null)
             query = query.Where(p => p.payment_method == paymentGetDto.payment_method);
         if (paymentGetDto.created_before != null)
@@ -24,7 +25,7 @@ public class PaymentRepository
             query = query.Where(p => p.created_at >= paymentGetDto.created_after);
         if (paymentGetDto.status != null)
             query = query.Where(p => p.payment_status == paymentGetDto.status); 
-
+            */
         return query;
     }
 
@@ -37,6 +38,7 @@ public class PaymentRepository
     public int CreatePayment(PaymentModel newPayment)
     {
         _context.Payment.Add(newPayment);
+        //The conversion of a datetime2 data type to a datetime data type resulted in an out-of-range value. The statement has been terminated.
         int rowsAffected = _context.SaveChanges();
         return rowsAffected;
     }

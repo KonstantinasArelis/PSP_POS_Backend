@@ -1,5 +1,5 @@
 public class PaymentGetDto {
-    public int page_nr {get; set;} 
+    public int page_nr {get; set;}
     public int limit {get; set;} 
     public int? order_id { get; set; }
     public int? payment_method { get; set; }
