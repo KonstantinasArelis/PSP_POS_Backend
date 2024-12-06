@@ -1,12 +1,15 @@
+using System.ComponentModel.DataAnnotations;
 using PSPBackend.Model;
 
 public class PaymentService
 {
     private readonly PaymentRepository _paymentRepository;
+    private readonly OrderService _orderService;
 
-    public PaymentService(PaymentRepository paymentRepository)
+    public PaymentService(PaymentRepository paymentRepository, OrderService orderService)
     {
         _paymentRepository = paymentRepository;
+        _orderService = orderService;
     }
 
     public List<PaymentModel> GetPayments(PaymentGetDto paymentGetDto)
@@ -24,28 +27,64 @@ public class PaymentService
         return result;
     }
 
+    // TO-DO more meaningful return
+    // 0 - unsuccefull, >0 - succefull
     public int CreatePayment(PaymentCreateDto newPaymentDto)
     {
+        if(newPaymentDto.total_amount <= 0)
+        {
+            Console.WriteLine("New payment total amount is negative");
+            throw new ValidationException("New payment total amount is negative");
+        }
+        if(newPaymentDto.tip_amount <= 0)
+        {
+            Console.WriteLine("New payment tip amount is negative");
+            throw new ValidationException("New payment tip amount is negative");
+        }
+
+        if (newPaymentDto.order_amount != null) // TO-DO what is order_amount
+        {
+            //newPaymentModel.order_amount = newPaymentDto.order_amount;
+            Console.WriteLine("order_amount propery is not used, it has to be null");
+            throw new ValidationException("order_amount propery is not used, it has to be null");
+        }
+
+        if(newPaymentDto.payment_method < 0 || newPaymentDto.payment_method > 3) // TO-DO fix enums
+        {
+            Console.WriteLine("Payment method propery has to be between 0-3");
+            throw new ValidationException("Payment method propery has to be between 0-3");
+        }
+
+        decimal alreadyPaid = this.getPaymentTotal(newPaymentDto.order_id);
+        OrderModel? currentOrder = _orderService.GetOrder(newPaymentDto.order_id);
+        if(currentOrder == null)
+        {
+            Console.WriteLine("order id of new payment is invalid");
+            throw new ValidationException("order id of new payment is invalid");
+        }
+
+
+        decimal orderTotal = currentOrder.total_amount ?? 0m;
+        if(orderTotal - alreadyPaid < newPaymentDto.total_amount)
+        {
+            Console.WriteLine($"Payment total amount exceeds the amount left to be paid for this order");
+            throw new ValidationException("Payment total amount exceeds the amount left to be paid for this order");
+        }
+        
+
+
         PaymentModel newPaymentModel = new PaymentModel();
         newPaymentModel.id = _paymentRepository.GetNewPaymentId(); 
-
-        // newPaymentModel.business_id = ? 
-        
-        if (newPaymentDto.total_amount != null)
-            newPaymentModel.total_amount = newPaymentDto.total_amount;
-        if (newPaymentDto.order_id != null)
-            newPaymentModel.order_id = newPaymentDto.order_id;
-        if (newPaymentDto.order_amount != null)
-            newPaymentModel.order_amount = newPaymentDto.order_amount;
-        if (newPaymentDto.tip_amount != null)
-            newPaymentModel.tip_amount = newPaymentDto.tip_amount;
-        if (newPaymentDto.payment_method != null)
-            newPaymentModel.payment_method = newPaymentDto.payment_method;
-        if (newPaymentDto.gift_card_id != null)
-            newPaymentModel.gift_card_id = newPaymentDto.gift_card_id; 
-
+        newPaymentModel.business_id = null; // TO-DO add business authorization
+        newPaymentModel.order_id = newPaymentDto.order_id;
+        newPaymentModel.total_amount = newPaymentDto.total_amount;
+        newPaymentModel.order_amount = null; // TO-DO what is order_amount
+        newPaymentModel.tip_amount = newPaymentDto.tip_amount;
+        newPaymentModel.payment_method = newPaymentDto.payment_method; //  TO-DO fix enum
         newPaymentModel.created_at = DateTime.Now;
-        newPaymentModel.business_id = null;
+        newPaymentModel.payment_status = 0; // TO-DO implement payment flow
+        newPaymentModel.gift_card_id = null; // TO-DO implement gift cards
+        
 
         var result = _paymentRepository.CreatePayment(newPaymentModel);
         return result;
@@ -55,5 +94,23 @@ public class PaymentService
     {
         var result = _paymentRepository.UpdatePayment(paymentId, updatedPaymentDto);
         return result;
+    }
+
+    public decimal getPaymentTotal(int orderId)
+    {
+        decimal totalAmount = 0;
+        // TO-DO limit order to not have more that 1000 orderitems
+        IEnumerable<OrderItemModel> itemsInOrder = _orderService.GetItems(orderId, 0, 1000);
+
+        foreach(OrderItemModel item in itemsInOrder)
+        {
+            if(item.product_price == null)
+            {
+                Console.WriteLine($"Warning: Product price is null for item with ID {item.id} in order {orderId}");
+            }
+            totalAmount += item.product_price ?? 0m;
+        }
+
+        return totalAmount;
     }
 }
