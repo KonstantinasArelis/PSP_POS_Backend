@@ -1,3 +1,4 @@
 connectionStrings.json
 bin/
 obj/
+.vs
