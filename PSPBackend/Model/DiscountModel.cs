@@ -8,6 +8,7 @@ namespace PSPBackend.Model
     {
         [Key]
         public int id { get; set; }
+       
         public int? business_id { get; set; } 
 
         public int? product_id { get; set; } //? specified in pdf

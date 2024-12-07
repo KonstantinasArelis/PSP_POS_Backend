@@ -1,5 +1,4 @@
 using PSPBackend.Model;
-// do we use services the right way?? what is their purpose in the first place??
 public class DiscountService
 {
         private readonly DiscountRepository _discountRepository;
