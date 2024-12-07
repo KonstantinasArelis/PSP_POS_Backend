@@ -48,4 +48,9 @@ public class TaxRepository
     
         return 0; // maybe another way can be used???
     }
+
+    public int GetNewTaxId()
+    {
+        return _context.Discount.Select(o => o.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
+    }
 }

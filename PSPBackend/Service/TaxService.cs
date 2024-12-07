@@ -22,6 +22,11 @@ public class TaxService
         {
             Console.WriteLine("CreateTax service");
             
+            if(tax.id == 0)
+            {
+                tax.id = _taxRepository.GetNewTaxId();
+            }
+
             if (_taxRepository.CreateTax(tax) > 0){
                 return tax;
             } else {

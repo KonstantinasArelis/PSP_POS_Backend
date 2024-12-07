@@ -61,7 +61,11 @@ public class DiscountService
         public DiscountModel? CreateDiscount(DiscountModel discount)
         {
             Console.WriteLine("CreateDiscount service");
-            
+            if(discount.id == 0)
+            {
+                discount.id = _discountRepository.GetNewDiscountId();
+            }
+
             if (_discountRepository.CreateDiscount(discount) > 0){
                 return discount;
             } else {

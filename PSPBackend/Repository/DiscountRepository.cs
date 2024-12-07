@@ -79,4 +79,10 @@ public class DiscountRepository
         return rowsAffected;
     }
 
+    public int GetNewDiscountId()
+    {
+        return _context.Discount.Select(o => o.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
+    }
+    
+
 }
