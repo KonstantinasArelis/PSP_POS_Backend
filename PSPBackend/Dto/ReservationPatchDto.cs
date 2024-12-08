@@ -1,8 +1,5 @@
-namespace PSPBackend.Model
+public class ReservationPatchDto
 {
-    public class ReservationModel
-    {
-        public int id { get; set; }
         public int? business_id { get; set; }
         public int? employee_id { get; set; }
         public string? client_name { get; set; }
@@ -13,5 +10,4 @@ namespace PSPBackend.Model
         public int? duration { get; set; }
         public int? ReservationStatus { get; set; }
         public int? service_id { get; set; }
-    }
 }

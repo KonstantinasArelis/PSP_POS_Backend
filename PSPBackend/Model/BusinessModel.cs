@@ -2,11 +2,11 @@ namespace PSPBackend.Model
 {
     public class BusinessModel
     {
-        public int Id { get; set; }
-        public string BusinessName { get; set; }
-        public string BusinessAddress { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
-        public string Currency { get; set; }
+        public int id { get; set; }
+        public string? business_name { get; set; }
+        public string? business_address { get; set; }
+        public string? phone { get; set; }
+        public string? email { get; set; }
+        public string? currency { get; set; }
     }
 }

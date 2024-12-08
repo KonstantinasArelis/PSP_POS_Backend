@@ -1,15 +1,26 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+using PSPBackend.Model;
+
 public class OrderItemModel
 {
-    public int Id { get; set; }
-    public int OrderId { get; set; }
-    public int ProductId { get; set; }
-    public  
- int ReservationId { get; set; }
-    public int Quantity { get; set; }
-    public string Variations { get; set; }
-    public string ProductName { get; set; }
-    public decimal ProductPrice { get; set; }
-    public int TaxId { get; set; }
-    public decimal VariationPrice { get; set; }
-    public decimal ItemDiscountAmount { get; set; }
+    public int id { get; set; }
+    [ForeignKey("Order")]
+    public int order_id { get; set; }
+    public int? product_id { get; set; }
+    public int? reservation_id { get; set; }
+    public int? quantity { get; set; }
+    public string? variations { get; set; }
+    public string? product_name { get; set; }
+    public decimal? product_price { get; set; }
+    public int? tax_id { get; set; }
+    public decimal? variation_price { get; set; }
+    public decimal? item_discount_amount { get; set; }
+    [JsonIgnore]
+    public OrderModel Order { get; set; }
+
+    public OrderItemModel()
+    {
+        id = 0;
+    }
 }

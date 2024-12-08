@@ -1,7 +1,7 @@
 CREATE TABLE Tax (
     id INT,
     tax_name VARCHAR(255),
-    tax_rate DECIMAL,
+    tax_rate DECIMAL(18,4),
     is_valid BIT,
     PRIMARY KEY (id)
 );
@@ -40,7 +40,7 @@ CREATE TABLE Product (
     id INT,
     product_name VARCHAR(255),
     business_id INT,
-    price DECIMAL,
+    price DECIMAL(18,4),
     product_type INT,
     is_for_sale BIT,
     tax_id INT,
@@ -84,7 +84,7 @@ CREATE TABLE _User (
     user_username VARCHAR(255),
     User_Role INT,
     password_hash VARCHAR(255),
-    tips_amount DECIMAL,
+    tips_amount DECIMAL(18,4),
     last_withdrawn_timestamp DATETIME,
     AccountStatus INT,
     PRIMARY KEY (id),
@@ -142,15 +142,14 @@ INSERT INTO DiscountType (discount_type_id, discount_type_name) VALUES
     (2, 'ORDER_ITEM');
 
 CREATE TABLE OrderStatus (
-    order_status_id INT,
-    order_status_name VARCHAR(20),
-    PRIMARY KEY (order_status_id) 
+    order_status VARCHAR(20),
+    PRIMARY KEY (order_status) 
 )
 
-INSERT INTO OrderStatus (order_status_id, order_status_name) VALUES
-    (1, 'OPEN'),
-    (2, 'PENDING_PAYMENT'),
-    (3, 'CLOSED');
+INSERT INTO OrderStatus (order_status) VALUES
+    ('OPEN'),
+    ('PENDING_PAYMENT'),
+    ('CLOSED');
 
 CREATE TABLE PaymentMethod (
     payment_method_id INT,
@@ -179,7 +178,7 @@ CREATE TABLE Discount (
     business_id INT,
     product_id INT,
     discount_type INT,
-    amount DECIMAL(8,2),
+    amount DECIMAL(18,2),
     discount_percentage DECIMAL(5,2),
     valid_from DATETIME,
     valid_until DATETIME,
@@ -194,9 +193,9 @@ CREATE TABLE _Order (
     id INT,
     business_id INT,
     employee_id INT,
-    order_discount_percentage DECIMAL,
-    total_amount DECIMAL,
-    total_discount_amount DECIMAL,
+    order_discount_percentage DECIMAL(18,4),
+    total_amount DECIMAL(18,4),
+    total_discount_amount DECIMAL(18,4),
     order_status INT,
     created_at DATETIME,
     closed_at DATETIME,
@@ -214,10 +213,10 @@ CREATE TABLE OrderItem (
     quantity INT,
     variations VARCHAR(1000),
     product_name VARCHAR(255),
-    product_price DECIMAL,
+    product_price DECIMAL(18,4),
     tax_id INT,
-    variation_price DECIMAL,
-    item_discount_amount DECIMAL,
+    variation_price DECIMAL(18,4),
+    item_discount_amount DECIMAL(18,4),
     PRIMARY KEY (id),
     FOREIGN KEY (order_id) REFERENCES _Order(id),
     FOREIGN KEY (product_id) REFERENCES Product(id),
@@ -231,7 +230,7 @@ CREATE TABLE Refund (
     order_item_id INT,
     returned_to_inventory BIT,
     refunded_quantity INT,
-    amount DECIMAL,
+    amount DECIMAL(18,4),
     reason VARCHAR(255),
     created_at DATETIME,
     PRIMARY KEY (id),
@@ -243,9 +242,9 @@ CREATE TABLE Payment (
     id INT,
     business_id INT,
     order_id INT,
-    total_amount DECIMAL,
-    order_amount DECIMAL,
-    tip_amount DECIMAL,
+    total_amount DECIMAL(18,4),
+    order_amount DECIMAL(18,4),
+    tip_amount DECIMAL(18,4),
     payment_method INT,
     created_at DATETIME,
     payment_status INT,
@@ -259,8 +258,8 @@ CREATE TABLE Payment (
 
 CREATE TABLE GiftCard (
     id INT,
-    original_amount DECIMAL,
-    amount_left DECIMAL,
+    original_amount DECIMAL(18,4),
+    amount_left DECIMAL(18,4),
     valid_from DATETIME,
     valid_until DATETIME,
     code_hash VARCHAR(255)
