@@ -132,9 +132,9 @@ CREATE TABLE Reservation (
 );
 
 CREATE TABLE DiscountType (
-    discount_type_id INT,
+    id INT,
     discount_type_name VARCHAR(20),
-    PRIMARY KEY (discount_type_id) 
+    PRIMARY KEY (id) 
 )
 
 INSERT INTO DiscountType (discount_type_id, discount_type_name) VALUES
@@ -178,9 +178,11 @@ CREATE TABLE Discount (
     business_id INT,
     product_id INT,
     discount_type INT,
-    amount DECIMAL(18,4),
-    discount_percentage DECIMAL(18,4),
+    amount DECIMAL(18,2),
+    discount_percentage DECIMAL(5,2),
     valid_from DATETIME,
+    valid_until DATETIME,
+    code_hash VARCHAR(255),
     PRIMARY KEY (id),
     FOREIGN KEY (business_id) REFERENCES Business(id),
     FOREIGN KEY (product_id) REFERENCES Product(id),
