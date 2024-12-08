@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PSPBackend.Model;
@@ -31,8 +32,22 @@ public class PaymentController : ControllerBase
     [HttpPost]
     public IActionResult CreatePayment([FromBody] PaymentCreateDto newPayment)
     {
-        var createdPayment = _paymentService.CreatePayment(newPayment);
-        return Ok(createdPayment);
+        int result;
+        try 
+        {
+            result = _paymentService.CreatePayment(newPayment);
+        } 
+        catch (ValidationException ex) {
+            return BadRequest(new {error = ex.Message});
+        }
+
+        if(result == 1)
+        {
+            return Ok();
+        } else {
+            return StatusCode(500, "Some kind of error");
+        }
+        
     }
 
     [HttpPatch("{id}")]
