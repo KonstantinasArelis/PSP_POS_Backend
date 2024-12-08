@@ -2,10 +2,10 @@ namespace PSPBackend.Model
 {
     public class TaxModel
     {
-        public int Id { get; set; }
-        public string TaxName { get; set; }
-        public decimal TaxRate { get; set; }
-        public bool IsValid { get; set; }
+        public int id { get; set; }
+        public string? tax_name { get; set; }
+        public decimal? tax_rate { get; set; } // what is the range for this? Must be modified in the table!
+        public bool? is_valid { get; set; }
     }
 }
 
