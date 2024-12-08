@@ -33,8 +33,8 @@ public class PaymentService
     {
         if(newPaymentDto.total_amount <= 0)
         {
-            Console.WriteLine("New payment total amount is negative");
-            throw new ValidationException("New payment total amount is negative");
+            Console.WriteLine("New payment total amount is negative or 0");
+            throw new ValidationException("New payment total amount is negative or 0");
         }
         if(newPaymentDto.tip_amount <= 0)
         {
@@ -49,10 +49,10 @@ public class PaymentService
             throw new ValidationException("order_amount propery is not used, it has to be null");
         }
 
-        if(newPaymentDto.payment_method < 0 || newPaymentDto.payment_method > 3) // TO-DO fix enums
+        if(newPaymentDto.payment_method == paymentMethodEnum.GIFTCARD && newPaymentDto.gift_card_id == null)
         {
-            Console.WriteLine("Payment method propery has to be between 0-3");
-            throw new ValidationException("Payment method propery has to be between 0-3");
+            Console.WriteLine("Payment method was Gift Card, but gift card was not provided");
+            throw new ValidationException("Payment method was Gift Card, but gift card was not provided");
         }
 
         decimal alreadyPaid = this.getPaymentTotal(newPaymentDto.order_id);
@@ -80,7 +80,8 @@ public class PaymentService
         newPaymentModel.total_amount = newPaymentDto.total_amount;
         newPaymentModel.order_amount = null; // TO-DO what is order_amount
         newPaymentModel.tip_amount = newPaymentDto.tip_amount;
-        newPaymentModel.payment_method = newPaymentDto.payment_method; //  TO-DO fix enum
+        //newPaymentModel.payment_method = newPaymentDto.payment_method; //  TO-DO fix enum
+
         newPaymentModel.created_at = DateTime.Now;
         newPaymentModel.payment_status = 0; // TO-DO implement payment flow
         newPaymentModel.gift_card_id = null; // TO-DO implement gift cards
