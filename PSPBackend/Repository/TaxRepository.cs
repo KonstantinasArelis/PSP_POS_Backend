@@ -51,6 +51,6 @@ public class TaxRepository
 
     public int GetNewTaxId()
     {
-        return _context.Discount.Select(o => o.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
+        return _context.Tax.Select(o => o.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
     }
 }
