@@ -1,3 +1,4 @@
+-- this creation querry is no longer up to date. For the structure of the db, look at azure data studio.
 CREATE TABLE Tax (
     id INT,
     tax_name VARCHAR(255),
