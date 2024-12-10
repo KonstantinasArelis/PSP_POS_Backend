@@ -51,10 +51,14 @@ public class ReservationController : ControllerBase
     [HttpPost]
     public IActionResult CreateReservation([FromBody] ReservationCreateDto reservation)
     {
-        Console.WriteLine("CreateReservation controller");
+        ReservationModel result;
+        try{
+            result = _reservationService.CreateReservation(reservation);
+        } catch(ValidationException ex) {
+            return BadRequest (new {error = ex.Message});
+        }
         if(!ModelState.IsValid)
         {
-            Console.WriteLine("CreateReservation invalid model");
             return BadRequest();
         } else {
             if (_reservationService.CreateReservation(reservation) != null){
