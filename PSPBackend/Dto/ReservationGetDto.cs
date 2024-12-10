@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 public class ReservationGetDto
 {
     public int page_nr { get; set; } = 0;
@@ -15,6 +17,8 @@ public class ReservationGetDto
     public DateTime? appointment_time_after { get; set; }
     public int? duration_less_than { get; set; }
     public int? duration_more_than { get; set; }
-    public int? status { get; set; }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public reservationStatusEnum? status { get; set; }
     public int? service_id { get; set; }
 }

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using PSPBackend.Model;
 
 public class ReservationRepository
@@ -85,13 +86,16 @@ public class ReservationRepository
         return gottenReservation;
     }
 
-    public int CreateReservation(ReservationModel reservation)
+    public ReservationModel CreateReservation(ReservationModel reservation)
     {
-        Console.WriteLine("CreateReservation repository");
         _context.Reservation.Add(reservation);
         int rowsAffected = _context.SaveChanges(); 
-
-        return rowsAffected;
+         
+        if(rowsAffected == 0)
+        {
+            throw new DbUpdateException("Failed to create a new reservation");
+        }
+        return reservation;
     }
 
     public int UpdateReservation(int id, ReservationPatchDto reservationDto)

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 public class ReservationPatchDto
 {
         public int? business_id { get; set; }
@@ -8,6 +10,8 @@ public class ReservationPatchDto
         public DateTime? last_modified { get; set; }
         public DateTime? appointment_time { get; set; }
         public int? duration { get; set; }
-        public int? ReservationStatus { get; set; }
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public reservationStatusEnum? ReservationStatus { get; set; }
         public int? service_id { get; set; }
 }

@@ -1,6 +1,8 @@
 using System.Linq;
 using PSPBackend.Model;
 using System.Text.RegularExpressions;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 public class ReservationService
 {
@@ -65,12 +67,6 @@ public class ReservationService
                 throw new ValidationException("Reservation client phone number is too long.");
             }
 
-            if(string.IsNullOrEmpty(reservationDto.duration))
-            {
-                Console.WriteLine("Reservation duration is null or empty.");
-                throw new ValidationException("Reservation duration is null or empty.");
-            }
-
             if(reservationDto.duration > maxReservationDuration)
             {
                 Console.WriteLine("Reservation duration cannot exceed " + maxReservationDuration);
@@ -102,35 +98,53 @@ public class ReservationService
                 throw new ValidationException("Service id is not used now, supposed to be null.");
             }
 
+            // map dto to a model for database
             ReservationModel newReservation = new ReservationModel();
-
             newReservation.id = _reservationRepository.GetNewOrderId();
-
             newReservation.client_name = reservationDto.client_name;
             newReservation.client_phone = reservationDto.client_phone;
             newReservation.appointment_time = reservationDto.appointment_time;
             newReservation.duration = reservationDto.duration;
             newReservation.service_id = reservationDto.service_id;
 
-            //remove later
+            // Set some properties
+            newReservation.created_at = DateTime.Now;
+            newReservation.last_modified = DateTime.Now;
+            newReservation.ReservationStatus = reservationStatusEnum.RESERVED;
+
+            // TO-DO change once users are added
             newReservation.business_id=null;
             newReservation.employee_id=null;
+
+            // TO-DO change once menu managemet is added
             newReservation.service_id=null;
-            //newReservation.ReservationStatus=null;
             
-            if (_reservationRepository.CreateReservation(newReservation) > 0){
+            try {
+                _reservationRepository.CreateReservation(newReservation);
+            } catch (DbUpdateException ex) {
+                Console.WriteLine("Failed to create a new reservation");
+                throw;
+            }
+            
+            try {
+                // create order for reservation
                 OrderModel newOrder = new OrderModel();
-                newOrder.id = 0;
+                newOrder.id = 0; // set to 0 because then CreateOrder finds a new id
                 _orderService.CreateOrder(newOrder);
 
+                // create order item for reservation (reservations are tied to order items)
                 OrderItemModel newOrderItem = new OrderItemModel();
+                newOrderItem.id = 0; // set to 0 because then AddItem finds a new id
+                newOrderItem.quantity = 1;
                 newOrderItem.reservation_id = newReservation.id;
-                _orderService.AddItem(newOrder.id, newOrderItem);
 
-                return newReservation;
-            } else{
-                return null;
+                // product_id, product_name, product_price, tax_id, item_discount_amount not set as they are not implemented yet
+                _orderService.AddItem(newOrder.id, newOrderItem);
+            } catch (DbUpdateException ex) {
+                throw;
             }
+            
+            return newReservation;
         }
 
         public int UpdateReservation(int id, ReservationPatchDto reservationDto)
