@@ -52,22 +52,21 @@ public class ReservationController : ControllerBase
     [HttpPost]
     public IActionResult CreateReservation([FromBody] ReservationCreateDto reservation)
     {
+        if(!ModelState.IsValid)
+        {
+            return BadRequest("Invalid Dto");
+        }
+
         ReservationModel result;
         try{
             result = _reservationService.CreateReservation(reservation);
         } catch(ValidationException ex) {
             return BadRequest (new {error = ex.Message});
+        } catch(Exception ex) {
+            return StatusCode(500, new {error = ex.Message});
         }
-        if(!ModelState.IsValid)
-        {
-            return BadRequest();
-        } else {
-            if (_reservationService.CreateReservation(reservation) != null){
-                return Ok();
-            } else {
-                return StatusCode(501); // http code to be changed
-            }
-        }
+
+        return Ok();
     }
 
     [HttpPatch("{id}")]
