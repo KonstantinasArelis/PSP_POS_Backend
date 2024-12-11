@@ -83,7 +83,14 @@ public class ReservationController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        ReservationModel result = _reservationService.UpdateReservation(id, reservationDto);
+        ReservationModel result;
+        try {
+            result = _reservationService.UpdateReservation(id, reservationDto);
+        } catch(DbUpdateException ex) {
+            return StatusCode(500);
+        } catch(KeyNotFound ex) {
+            return NotFound();
+        }
 
         return Ok(result);
     }

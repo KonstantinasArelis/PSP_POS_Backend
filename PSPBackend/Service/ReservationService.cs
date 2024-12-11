@@ -25,7 +25,12 @@ public class ReservationService
 
         public ReservationModel GetReservationById(int id)
         {
-            ReservationModel gottenReservation = _reservationRepository.GetReservationById(id);
+            ReservationModel gottenReservation;
+            try {
+                gottenReservation = _reservationRepository.GetReservationById(id);
+            } catch (KeyNotFoundException ex) {
+                throw;
+            }
             return gottenReservation;
         }
 
@@ -85,7 +90,9 @@ public class ReservationService
             try{
                 ReservationModel result = _reservationRepository.UpdateReservation(id, reservationDto);
                 return result;
-            } catch (Exception ex){
+            } catch (DbUpdateException ex){
+                throw;
+            } catch (KeyNotFound ex){
                 throw;
             }
             

@@ -27,28 +27,8 @@ public class PaymentService
         return result;
     }
 
-    // TO-DO more meaningful return
-    // 0 - unsuccefull, >0 - succefull
-    public int CreatePayment(PaymentCreateDto newPaymentDto)
+    public PaymentModel CreatePayment(PaymentCreateDto newPaymentDto)
     {
-        if(newPaymentDto.total_amount <= 0)
-        {
-            Console.WriteLine("New payment total amount is negative or 0");
-            throw new ValidationException("New payment total amount is negative or 0");
-        }
-        if(newPaymentDto.tip_amount <= 0)
-        {
-            Console.WriteLine("New payment tip amount is negative");
-            throw new ValidationException("New payment tip amount is negative");
-        }
-
-        if (newPaymentDto.order_amount != null) // TO-DO what is order_amount
-        {
-            //newPaymentModel.order_amount = newPaymentDto.order_amount;
-            Console.WriteLine("order_amount propery is not used, it has to be null");
-            throw new ValidationException("order_amount propery is not used, it has to be null");
-        }
-
         if(newPaymentDto.payment_method == paymentMethodEnum.GIFTCARD && newPaymentDto.gift_card_id == null)
         {
             Console.WriteLine("Payment method was Gift Card, but gift card was not provided");
@@ -57,11 +37,6 @@ public class PaymentService
 
         decimal alreadyPaid = this.getPaymentTotal(newPaymentDto.order_id);
         OrderModel? currentOrder = _orderService.GetOrder(newPaymentDto.order_id);
-        if(currentOrder == null)
-        {
-            Console.WriteLine("order id of new payment is invalid");
-            throw new ValidationException("order id of new payment is invalid");
-        }
 
 
         decimal orderTotal = currentOrder.total_amount ?? 0m;
@@ -86,8 +61,14 @@ public class PaymentService
         newPaymentModel.payment_status = 0; // TO-DO implement payment flow
         newPaymentModel.gift_card_id = null; // TO-DO implement gift cards
         
+        PaymentModel result;
 
-        var result = _paymentRepository.CreatePayment(newPaymentModel);
+        try {
+            result = _paymentRepository.CreatePayment(newPaymentModel);
+        } catch (dbUpdateException ex) {
+            throw;
+        }
+
         return result;
     }
 

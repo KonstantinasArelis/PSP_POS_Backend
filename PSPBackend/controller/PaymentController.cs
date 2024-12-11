@@ -17,6 +17,11 @@ public class PaymentController : ControllerBase
     [HttpGet]
     public IActionResult GetPayments([FromQuery] PaymentGetDto paymentGetDto)
     {
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         List<PaymentModel> gottenPayments = _paymentService.GetPayments(paymentGetDto);
         return Ok(gottenPayments);
     }
@@ -24,36 +29,63 @@ public class PaymentController : ControllerBase
     [HttpGet("{id}")]
     public IActionResult GetPaymentById([FromRoute] int id)
     {
-        Console.WriteLine("Payment controller GetPaymentById with id: " + id);
-        var gottenPayment = _paymentService.GetPaymentById(id);
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        PaymentModel gottenPayment;
+
+        try {
+            _paymentService.GetPaymentById(id);
+        } catch (KeyNotFoundException ex) {
+            return NotFound();
+        } catch(DbUpdateException ex) {
+            return StatusCode(500);
+        }
+
         return Ok(gottenPayment);
     }
 
     [HttpPost]
     public IActionResult CreatePayment([FromBody] PaymentCreateDto newPayment)
     {
-        int result;
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        PaymentModel result;
         try 
         {
             result = _paymentService.CreatePayment(newPayment);
-        } 
-        catch (ValidationException ex) {
+        } catch (ValidationException ex) {
             return BadRequest(new {error = ex.Message});
+        } catch(DbUpdateException ex) {
+            return StatusCode(500);
         }
 
-        if(result == 1)
-        {
-            return Ok();
-        } else {
-            return StatusCode(500, "Some kind of error");
-        }
-        
+        return Ok(result);
     }
 
     [HttpPatch("{id}")]
     public IActionResult UpdatePayment([FromRoute] int paymentId, [FromBody] PaymentUpdateDto updatedPaymentDto)
     {
-        var updatedPayment = _paymentService.UpdatePayment(paymentId, updatedPaymentDto);
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        PaymentModel updatedPayment;
+
+        try {
+            updatedPayment = _paymentService.UpdatePayment(paymentId, updatedPaymentDto);
+        } catch (ValidationException ex) {
+            return BadRequest(new {error = ex.Message});
+        } catch(DbUpdateException ex) {
+            return StatusCode(500);
+        }
+
         return Ok(updatedPayment);
     }
 }

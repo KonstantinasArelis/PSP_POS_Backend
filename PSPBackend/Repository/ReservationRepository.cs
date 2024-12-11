@@ -76,7 +76,6 @@ public class ReservationRepository
             query = query.Where(c => c.service_id == reservationGetDto.service_id);
         }
 
-        Console.WriteLine("LOG: repository returns Reservation");
         return query; 
     }
 
@@ -121,7 +120,6 @@ public class ReservationRepository
             {
                 
                 var reservationProperty = typeof(ReservationModel).GetProperty(property.Name);
-                Console.WriteLine("TAESSTT: Changing field " + property.Name + " to " + dtoValue);
                 reservationProperty?.SetValue(reservation, dtoValue);
             }
         }

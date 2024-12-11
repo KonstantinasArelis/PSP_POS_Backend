@@ -35,15 +35,18 @@ public class PaymentRepository
         return gottenPayment;
     }
 
-    public int CreatePayment(PaymentModel newPayment)
+    public PaymentModel CreatePayment(PaymentModel newPayment)
     {
         _context.Payment.Add(newPayment);
         //The conversion of a datetime2 data type to a datetime data type resulted in an out-of-range value. The statement has been terminated.
         int rowsAffected = _context.SaveChanges();
-        return rowsAffected;
+        if(rowsAffected == 0){
+            throw new DbUdateException("Failed to create payment in database");
+        }
+        return newPayment;
     }
 
-    public int UpdatePayment(int paymentId, PaymentUpdateDto updatedPaymentDto)
+    public PaymentModel UpdatePayment(int paymentId, PaymentUpdateDto updatedPaymentDto)
     {
         PaymentModel payment = GetPaymentById(paymentId);
 
@@ -64,7 +67,14 @@ public class PaymentRepository
         if (updatedPaymentDto.gift_card_id != null)
             payment.gift_card_id = updatedPaymentDto.gift_card_id.Value;
 
-        return _context.SaveChanges();
+        result = _context.SaveChanges();
+
+        if(result == 0)
+        {
+            throw new DbUpdateException("Failed to update payment in database");
+        }
+
+        return payment;
     }
 
     public int GetNewPaymentId()

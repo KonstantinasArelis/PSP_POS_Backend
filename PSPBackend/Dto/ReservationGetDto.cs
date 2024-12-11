@@ -6,7 +6,7 @@ public class ReservationGetDto
     [Range(0, int.MaxValue, ErrorMessage = "Page number must be a non-negative integer.")]
     public int page_nr { get; set; } = 0;
 
-    [Range(1, 100, ErrorMessage = "Please enter a page limit between 1 and 100.")]
+    [Range(0, 100, ErrorMessage = "Page limit must be between 0 and 100")]
     public int limit { get; set; } = 20;
 
     [Range(1, int.MaxValue, ErrorMessage = "Id must be a positive integer.")] 
