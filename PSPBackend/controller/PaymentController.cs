@@ -40,8 +40,6 @@ public class PaymentController : ControllerBase
             _paymentService.GetPaymentById(id);
         } catch (KeyNotFoundException ex) {
             return NotFound();
-        } catch(DbUpdateException ex) {
-            return StatusCode(500);
         }
 
         return Ok(gottenPayment);

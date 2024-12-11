@@ -23,7 +23,13 @@ public class PaymentService
 
     public PaymentModel GetPaymentById(int paymentId)
     {
-        var result = _paymentRepository.GetPaymentById(paymentId);
+        PaymentModel result;
+        try {
+            result = _paymentRepository.GetPaymentById(paymentId);
+        } catch (KeyNotFoundException ex) {
+            throw;
+        }
+        
         return result;
     }
 
@@ -46,8 +52,6 @@ public class PaymentService
             throw new ValidationException("Payment total amount exceeds the amount left to be paid for this order");
         }
         
-
-
         PaymentModel newPaymentModel = new PaymentModel();
         newPaymentModel.id = _paymentRepository.GetNewPaymentId(); 
         newPaymentModel.business_id = null; // TO-DO add business authorization
@@ -55,7 +59,7 @@ public class PaymentService
         newPaymentModel.total_amount = newPaymentDto.total_amount;
         newPaymentModel.order_amount = null; // TO-DO what is order_amount
         newPaymentModel.tip_amount = newPaymentDto.tip_amount;
-        //newPaymentModel.payment_method = newPaymentDto.payment_method; //  TO-DO fix enum
+        newPaymentModel.payment_method = newPaymentDto.payment_method;
 
         newPaymentModel.created_at = DateTime.Now;
         newPaymentModel.payment_status = 0; // TO-DO implement payment flow
@@ -72,9 +76,15 @@ public class PaymentService
         return result;
     }
 
-    public int UpdatePayment(int paymentId, PaymentUpdateDto updatedPaymentDto)
+    public PaymentModel UpdatePayment(int paymentId, PaymentUpdateDto updatedPaymentDto)
     {
-        var result = _paymentRepository.UpdatePayment(paymentId, updatedPaymentDto);
+        PaymentModel result;
+        try {
+            result = _paymentRepository.UpdatePayment(paymentId, updatedPaymentDto);
+        } catch (DbUpdateException) {
+            throw;
+        }
+
         return result;
     }
 

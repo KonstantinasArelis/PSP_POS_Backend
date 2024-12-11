@@ -31,8 +31,14 @@ public class PaymentRepository
 
     public PaymentModel GetPaymentById(int paymentId)
     {
-        PaymentModel? gottenPayment = _context.Payment.Single(p => p.id == paymentId);
-        return gottenPayment;
+
+        PaymentModel? result = _context.Payment.Single(p => p.id == paymentId);
+
+        if (result == null) {
+            throw new KeyNotFoundException("Payment with id " + paymentId + " was not found");
+        }
+        
+        return result;
     }
 
     public PaymentModel CreatePayment(PaymentModel newPayment)
