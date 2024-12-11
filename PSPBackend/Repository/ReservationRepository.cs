@@ -83,6 +83,11 @@ public class ReservationRepository
     public ReservationModel GetReservationById(int id)
     {
         ReservationModel? gottenReservation = _context.Reservation.Single(c => c.id == id);
+
+        if(gottenReservation == null)
+        {
+            throw new KeyNotFoundException("Order with id " + id + " was not found");
+        }
         return gottenReservation;
     }
 
@@ -98,29 +103,36 @@ public class ReservationRepository
         return reservation;
     }
 
-    public int UpdateReservation(int id, ReservationPatchDto reservationDto)
+    public ReservationModel UpdateReservation(int id, ReservationPatchDto reservationDto)
     {
-        ReservationModel? reservation = GetReservationById(id);
-        
-        if(reservation == null)
+        ReservationModel? reservation;
+        try
         {
-            Console.WriteLine("Reservation Repository: Reservation that was supposed to be updated was not found");
-            return 0;
-        } else {
-
-            foreach (var property in typeof(ReservationPatchDto).GetProperties())
-            {
-                var dtoValue = property.GetValue(reservationDto);
-                if(dtoValue != null)
-                {
-                    
-                    var reservationProperty = typeof(ReservationModel).GetProperty(property.Name);
-                    Console.WriteLine("TAESSTT: Changing field " + property.Name + " to " + dtoValue);
-                    reservationProperty?.SetValue(reservation, dtoValue);
-                }
-            }
-            return _context.SaveChanges();
+            reservation = GetReservationById(id);
+        } catch (KeyNotFoundException ex) {
+            throw;
         }
+
+
+        foreach (var property in typeof(ReservationPatchDto).GetProperties())
+        {
+            var dtoValue = property.GetValue(reservationDto);
+            if(dtoValue != null)
+            {
+                
+                var reservationProperty = typeof(ReservationModel).GetProperty(property.Name);
+                Console.WriteLine("TAESSTT: Changing field " + property.Name + " to " + dtoValue);
+                reservationProperty?.SetValue(reservation, dtoValue);
+            }
+        }
+
+        int result = _context.SaveChanges();
+        if(result == 0)
+        {
+            throw new DbUpdateException("Could not save updated reservation");
+        }
+
+        return reservation;
     }
 
     public int GetNewOrderId()

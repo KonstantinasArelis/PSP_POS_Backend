@@ -14,36 +14,42 @@ public class ReservationController : ControllerBase
         
     }
 
-    /*
-    [HttpGet]
-    public string Get()
-    {
-        Console.WriteLine("LOG: controller creates order");
-        string temp = _orderService.CreateOrder();
-        Console.WriteLine("LOG: controller supposed to return: " + temp);
-        return temp;
-    }
-    */
     [HttpGet]
     public IActionResult GetReservations([FromQuery]ReservationGetDto reservationGetDto) 
-    {        
-        //separate this into validator later
-        if(reservationGetDto.limit>100)
+    {   
+        if(!ModelState.IsValid)
         {
-            return BadRequest();
+            return BadRequest(ModelState);
         }
-        Console.WriteLine("LOG: Reservation controller GET request");
-        List<ReservationModel> gottenReservation = _reservationService.GetReservations(reservationGetDto);
-        Console.WriteLine("LOG: Reservation controller returns orders: " + gottenReservation);
-        return Ok(gottenReservation);
-        //return NotFound();
+
+        List<ReservationModel> result;
+
+        try {
+            result = _reservationService.GetReservations(reservationGetDto);
+        } catch (ValidationException ex) {
+            return BadRequest( new {error = ex.Message});
+        } catch (Exception ex) {
+            return StatusCode(500);
+        }
+
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
     public IActionResult GetReservationById(int id)
     {
-        Console.WriteLine("TESTTTTTTTTTTTTT");
-        ReservationModel gottenReservation = _reservationService.GetReservationById(id);
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        ReservationModel gottenReservation;
+        try {
+            gottenReservation = _reservationService.GetReservationById(id);
+        } catch (KeyNotFoundException ex) {
+            return NotFound();
+        }
+        
         return Ok(gottenReservation);
     }
 
@@ -54,7 +60,7 @@ public class ReservationController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
-            return BadRequest("Invalid Dto");
+            return BadRequest(ModelState);
         }
 
         ReservationModel result;
@@ -63,24 +69,22 @@ public class ReservationController : ControllerBase
         } catch(ValidationException ex) {
             return BadRequest (new {error = ex.Message});
         } catch(Exception ex) {
-            return StatusCode(500, new {error = ex.Message});
+            return StatusCode(500);
         }
 
-        return Ok();
+        return Ok(result);
     }
 
     [HttpPatch("{id}")]
     public IActionResult UpdateReservation(int id, [FromBody] ReservationPatchDto reservationDto)
     {
-        int result = _reservationService.UpdateReservation(id, reservationDto);
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
-        if(result == 1){
-            return Ok();
-        }
-        else if(result == 0){
-            return NotFound();
-        } else {
-            return StatusCode(501); // http code to be changed
-        }
+        ReservationModel result = _reservationService.UpdateReservation(id, reservationDto);
+
+        return Ok(result);
     }
 }
