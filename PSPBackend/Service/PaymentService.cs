@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using PSPBackend.Model;
 
 public class PaymentService
@@ -23,32 +24,18 @@ public class PaymentService
 
     public PaymentModel GetPaymentById(int paymentId)
     {
-        var result = _paymentRepository.GetPaymentById(paymentId);
+        PaymentModel result;
+        try {
+            result = _paymentRepository.GetPaymentById(paymentId);
+        } catch (KeyNotFoundException ex) {
+            throw;
+        }
+        
         return result;
     }
 
-    // TO-DO more meaningful return
-    // 0 - unsuccefull, >0 - succefull
-    public int CreatePayment(PaymentCreateDto newPaymentDto)
+    public PaymentModel CreatePayment(PaymentCreateDto newPaymentDto)
     {
-        if(newPaymentDto.total_amount <= 0)
-        {
-            Console.WriteLine("New payment total amount is negative or 0");
-            throw new ValidationException("New payment total amount is negative or 0");
-        }
-        if(newPaymentDto.tip_amount <= 0)
-        {
-            Console.WriteLine("New payment tip amount is negative");
-            throw new ValidationException("New payment tip amount is negative");
-        }
-
-        if (newPaymentDto.order_amount != null) // TO-DO what is order_amount
-        {
-            //newPaymentModel.order_amount = newPaymentDto.order_amount;
-            Console.WriteLine("order_amount propery is not used, it has to be null");
-            throw new ValidationException("order_amount propery is not used, it has to be null");
-        }
-
         if(newPaymentDto.payment_method == paymentMethodEnum.GIFTCARD && newPaymentDto.gift_card_id == null)
         {
             Console.WriteLine("Payment method was Gift Card, but gift card was not provided");
@@ -56,12 +43,8 @@ public class PaymentService
         }
 
         decimal alreadyPaid = this.getPaymentTotal(newPaymentDto.order_id);
+        
         OrderModel? currentOrder = _orderService.GetOrder(newPaymentDto.order_id);
-        if(currentOrder == null)
-        {
-            Console.WriteLine("order id of new payment is invalid");
-            throw new ValidationException("order id of new payment is invalid");
-        }
 
 
         decimal orderTotal = currentOrder.total_amount ?? 0m;
@@ -70,9 +53,13 @@ public class PaymentService
             Console.WriteLine($"Payment total amount exceeds the amount left to be paid for this order");
             throw new ValidationException("Payment total amount exceeds the amount left to be paid for this order");
         }
+
+        if(currentOrder.order_status == "CLOSED")
+        {
+            Console.WriteLine("Cannot add a payment for a closed order");
+            throw new ValidationException("Cannot add a payment for a closed order");
+        }
         
-
-
         PaymentModel newPaymentModel = new PaymentModel();
         newPaymentModel.id = _paymentRepository.GetNewPaymentId(); 
         newPaymentModel.business_id = null; // TO-DO add business authorization
@@ -80,20 +67,79 @@ public class PaymentService
         newPaymentModel.total_amount = newPaymentDto.total_amount;
         newPaymentModel.order_amount = null; // TO-DO what is order_amount
         newPaymentModel.tip_amount = newPaymentDto.tip_amount;
-        //newPaymentModel.payment_method = newPaymentDto.payment_method; //  TO-DO fix enum
-
+        newPaymentModel.payment_method = newPaymentDto.payment_method;
+        newPaymentModel.payment_status = paymentStatusEnum.DONE;
         newPaymentModel.created_at = DateTime.Now;
-        newPaymentModel.payment_status = 0; // TO-DO implement payment flow
         newPaymentModel.gift_card_id = null; // TO-DO implement gift cards
         
+        PaymentModel result;
 
-        var result = _paymentRepository.CreatePayment(newPaymentModel);
+        try {
+            result = _paymentRepository.CreatePayment(newPaymentModel);
+
+            if(orderTotal == alreadyPaid+newPaymentDto.total_amount)
+            {
+                _orderService.closeOrder(newPaymentDto.order_id);
+            }
+        } catch (DbUpdateException ex) {
+            throw;
+        }
+
         return result;
     }
 
-    public int UpdatePayment(int paymentId, PaymentUpdateDto updatedPaymentDto)
+    public PaymentModel UpdatePayment(int paymentId, PaymentUpdateDto updatedPaymentDto)
     {
-        var result = _paymentRepository.UpdatePayment(paymentId, updatedPaymentDto);
+        if(updatedPaymentDto.payment_method == paymentMethodEnum.GIFTCARD && updatedPaymentDto.gift_card_id == null)
+        {
+            Console.WriteLine("Payment method was Gift Card, but gift card was not provided");
+            throw new ValidationException("Payment method was Gift Card, but gift card was not provided");
+        }
+
+        decimal alreadyPaid = this.getPaymentTotal(updatedPaymentDto.order_id);
+        PaymentModel currentPayment;
+
+        try{
+            currentPayment = GetPaymentById(paymentId);
+        } catch (KeyNotFoundException ex) {
+            throw;
+        }
+
+        decimal alreadyPaidWithoutUpdatedPayment = alreadyPaid - currentPayment.total_amount ?? 0;
+
+        
+        OrderModel? currentOrder; 
+        try{
+            currentOrder = _orderService.GetOrder(updatedPaymentDto.order_id);
+        } catch (KeyNotFoundException ex){
+            throw;
+        }
+        
+
+        if(alreadyPaidWithoutUpdatedPayment + updatedPaymentDto.total_amount > currentOrder.total_amount)
+        {
+            Console.WriteLine("Updated payment makes the total payment of order exceed the total order amount");
+            throw new ValidationException("Updated payment makes the total payment of order exceed the total order amount");
+        }
+
+        if(currentOrder.order_status == "CLOSED")
+        {
+            Console.WriteLine("Cannot edit a payment for a closed order");
+            throw new ValidationException("Cannot edit a payment for a closed order");
+        }
+
+        PaymentModel result;
+        try {
+            result = _paymentRepository.UpdatePayment(paymentId, updatedPaymentDto);
+
+            if(currentOrder.total_amount == alreadyPaidWithoutUpdatedPayment + updatedPaymentDto.total_amount)
+            {
+                _orderService.closeOrder(updatedPaymentDto.order_id);
+            }
+        } catch (DbUpdateException) {
+            throw;
+        }
+
         return result;
     }
 

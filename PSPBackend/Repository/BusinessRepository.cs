@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using PSPBackend.Model;
 public class BusinessRepository 
@@ -35,21 +36,38 @@ public class BusinessRepository
 
     public BusinessModel getBusinessById(int businessId)
     {
-        BusinessModel? gottenBusiness = _context.Business.Single(c => c.id == businessId);
-        return gottenBusiness;
+        BusinessModel? result = _context.Business.Single(c => c.id == businessId);
+
+        if(result == null)
+        {
+            Console.WriteLine("Business with id " + businessId + " was not found");
+            throw new KeyNotFoundException("Business with id " + businessId + " was not found");
+        }
+        return result;
     }
 
-    public int createBusiness(BusinessModel newBusiness)
+    public BusinessModel createBusiness(BusinessModel newBusiness)
     {
         _context.Business.Add(newBusiness);
         int rowsAffected = _context.SaveChanges(); 
 
-        return rowsAffected;
+        if(rowsAffected == 0)
+        {
+            Console.WriteLine("Failed to create business in database");
+            throw new DbUpdateException("Failed to create business in database");
+        }
+
+        return newBusiness;
     }
 
-    public int updateBusiness(int businessId, BusinessUpdateDto businessUpdateDto)
+    public BusinessModel updateBusiness(int businessId, BusinessUpdateDto businessUpdateDto)
     {
-        BusinessModel business = getBusinessById(businessId);
+        BusinessModel business;
+        try {
+            business = getBusinessById(businessId);
+        } catch(KeyNotFoundException){
+            throw;
+        }
 
         //reflection cant be used because model and request propery names differ
 
@@ -74,15 +92,25 @@ public class BusinessRepository
             business.currency = businessUpdateDto.currency;
         }
 
-        return _context.SaveChanges();
+        int rowsAffected = _context.SaveChanges();
+        if(rowsAffected == 0){
+            Console.WriteLine("Failed to update business in database");
+            throw new DbUpdateException("Failed to update business in database");
+        }
+
+        return business;
     }
 
-    public int deleteBusiness(int businessId)
+    public void deleteBusiness(int businessId)
     {
-        BusinessModel business = getBusinessById(businessId);
-        _context.Remove(business);
+        BusinessModel business;
+        try {
+            business = getBusinessById(businessId);
+        } catch (KeyNotFoundException){
+            throw;
+        }
         
-        return 0;
+        _context.Remove(business);
     }
 
     public int GetNewBusinessId()

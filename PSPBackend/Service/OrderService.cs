@@ -115,4 +115,16 @@ public class OrderService
                 _orderRepository.DeleteOrderItem(itemId);
             }
         }
+
+        public OrderItemModel getOrderItemByReservationId(int reservationId)
+        {
+            OrderItemModel result = _orderRepository.getOrderItemByReservationId(reservationId);
+            return result;
+        }
+
+        public int closeOrder(int orderId)
+        {
+            int result =_orderRepository.closeOrder(orderId);
+            return result;
+        }
 }
