@@ -76,6 +76,11 @@ public class PaymentService
 
         try {
             result = _paymentRepository.CreatePayment(newPaymentModel);
+
+            if(orderTotal == alreadyPaid+newPaymentDto.total_amount)
+            {
+                _orderService.closeOrder(newPaymentDto.order_id);
+            }
         } catch (DbUpdateException ex) {
             throw;
         }
@@ -126,6 +131,11 @@ public class PaymentService
         PaymentModel result;
         try {
             result = _paymentRepository.UpdatePayment(paymentId, updatedPaymentDto);
+
+            if(currentOrder.total_amount == alreadyPaidWithoutUpdatedPayment + updatedPaymentDto.total_amount)
+            {
+                _orderService.closeOrder(updatedPaymentDto.order_id);
+            }
         } catch (DbUpdateException) {
             throw;
         }

@@ -121,4 +121,10 @@ public class OrderService
             OrderItemModel result = _orderRepository.getOrderItemByReservationId(reservationId);
             return result;
         }
+
+        public int closeOrder(int orderId)
+        {
+            int result =_orderRepository.closeOrder(orderId);
+            return result;
+        }
 }
