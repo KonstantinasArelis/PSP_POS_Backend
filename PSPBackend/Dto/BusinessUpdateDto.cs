@@ -1,18 +1,20 @@
+using System.ComponentModel.DataAnnotations;
+
 public class BusinessUpdateDto 
 {
     // TO-DO documentation says there should be id field in here, but it is already passed by route
-    [BusinessName]
+    [BusinessNameAttibute]
     public string? name { get; set; }
 
-    [BusinessAddress]
+    [BusinessAddressAttibute]
     public string? address { get; set; }
 
-    [phone]
+    [Phone]
     public string? phone { get; set; }
 
-    [email]
+    [EmailAddress]
     public string? email { get; set; }
     
-    [currency]
+    [CurrencyAttibute]
     public string? currency { get; set; }
 }

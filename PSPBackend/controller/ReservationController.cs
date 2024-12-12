@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PSPBackend.Model;
 
 [ApiController]
@@ -28,8 +29,6 @@ public class ReservationController : ControllerBase
             result = _reservationService.GetReservations(reservationGetDto);
         } catch (ValidationException ex) {
             return BadRequest( new {error = ex.Message});
-        } catch (Exception ex) {
-            return StatusCode(500);
         }
 
         return Ok(result);
@@ -46,7 +45,7 @@ public class ReservationController : ControllerBase
         ReservationModel gottenReservation;
         try {
             gottenReservation = _reservationService.GetReservationById(id);
-        } catch (KeyNotFoundException ex) {
+        } catch (KeyNotFoundException) {
             return NotFound();
         }
         
@@ -68,7 +67,7 @@ public class ReservationController : ControllerBase
             result = _reservationService.CreateReservation(reservation);
         } catch(ValidationException ex) {
             return BadRequest (new {error = ex.Message});
-        } catch(Exception ex) {
+        } catch(DbUpdateException) {
             return StatusCode(500);
         }
 
@@ -86,9 +85,9 @@ public class ReservationController : ControllerBase
         ReservationModel result;
         try {
             result = _reservationService.UpdateReservation(id, reservationDto);
-        } catch(DbUpdateException ex) {
+        } catch(DbUpdateException) {
             return StatusCode(500);
-        } catch(KeyNotFound ex) {
+        } catch(KeyNotFoundException) {
             return NotFound();
         }
 

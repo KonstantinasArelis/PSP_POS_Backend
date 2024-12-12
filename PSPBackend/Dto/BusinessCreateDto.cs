@@ -1,19 +1,21 @@
+using System.ComponentModel.DataAnnotations;
+
 public class BusinessCreateDto 
 {
     // id property should be here according to api contract, but that does not make sense
 
-    [BusinessName]
+    [BusinessNameAttibute]
     public string? name { get; set; }
 
-    [BusinessAddress]
+    [BusinessAddressAttibute]
     public string? address { get; set; }
 
-    [phone]
+    [Phone]
     public string? phone { get; set; }
 
-    [email]
+    [EmailAddress]
     public string? email { get; set; }
 
-    [currency]
+    [CurrencyAttibute]
     public string? currency { get; set; }
 }

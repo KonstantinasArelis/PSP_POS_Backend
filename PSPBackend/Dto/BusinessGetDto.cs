@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 public class BusinessGetDto 
 {
     [Range(0, int.MaxValue, ErrorMessage = "Page number must be a non-negative integer.")]
@@ -5,18 +7,18 @@ public class BusinessGetDto
 
     [Range(0, 100, ErrorMessage = "Page limit must be between 0 and 100")]
     public int limit { get; set; } = 20;
-    [BusinessName]
+    [BusinessNameAttibute]
     public string? name { get; set; }
 
-    [BusinessAddress]
+    [BusinessAddressAttibute]
     public string? address { get; set; }
 
-    [phone]
+    [Phone]
     public string? phone { get; set; }
 
-    [email]
+    [EmailAddress]
     public string? email { get; set; }
 
-    [currency]
+    [CurrencyAttibute]
     public string? currency { get; set; }
 }

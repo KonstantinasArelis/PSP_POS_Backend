@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PSPBackend.Model;
 
 [ApiController]
@@ -34,15 +35,15 @@ public class PaymentController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        PaymentModel gottenPayment;
+        PaymentModel result;
 
         try {
-            _paymentService.GetPaymentById(id);
-        } catch (KeyNotFoundException ex) {
+            result = _paymentService.GetPaymentById(id);
+        } catch (KeyNotFoundException) {
             return NotFound();
         }
 
-        return Ok(gottenPayment);
+        return Ok(result);
     }
 
     [HttpPost]
@@ -59,7 +60,7 @@ public class PaymentController : ControllerBase
             result = _paymentService.CreatePayment(newPayment);
         } catch (ValidationException ex) {
             return BadRequest(new {error = ex.Message});
-        } catch(DbUpdateException ex) {
+        } catch(DbUpdateException) {
             return StatusCode(500);
         }
 
@@ -80,8 +81,10 @@ public class PaymentController : ControllerBase
             updatedPayment = _paymentService.UpdatePayment(paymentId, updatedPaymentDto);
         } catch (ValidationException ex) {
             return BadRequest(new {error = ex.Message});
-        } catch(DbUpdateException ex) {
+        } catch(DbUpdateException) {
             return StatusCode(500);
+        } catch(KeyNotFoundException) {
+            return NotFound();
         }
 
         return Ok(updatedPayment);

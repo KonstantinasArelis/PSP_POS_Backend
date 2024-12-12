@@ -123,7 +123,7 @@ public class ReservationRepository
                 reservationProperty?.SetValue(reservation, dtoValue);
             }
         }
-
+        reservation.last_modified = DateTime.Now;
         int result = _context.SaveChanges();
         if(result == 0)
         {

@@ -68,12 +68,15 @@ public class ReservationService
                 // create order for reservation
                 OrderModel newOrder = new OrderModel();
                 newOrder.id = 0; // set to 0 because then CreateOrder finds a new id
+                newOrder.employee_id = 1; // set to 1 since authorization is not implemented yet
+
                 _orderService.CreateOrder(newOrder);
 
                 // create order item for reservation (reservations are tied to order items)
                 OrderItemModel newOrderItem = new OrderItemModel();
                 newOrderItem.id = 0; // set to 0 because then AddItem finds a new id
                 newOrderItem.quantity = 1;
+
                 newOrderItem.reservation_id = newReservation.id;
 
                 // product_id, product_name, product_price, tax_id, item_discount_amount not set as they are not implemented yet
@@ -89,12 +92,17 @@ public class ReservationService
         {
             try{
                 ReservationModel result = _reservationRepository.UpdateReservation(id, reservationDto);
+
+                if(reservationDto.ReservationStatus == reservationStatusEnum.CANCELLED)
+                {
+                    int orderId = _orderService.getOrderItemByReservationId(id).order_id;
+                    _orderService.DeleteOrder(orderId);
+                }
                 return result;
             } catch (DbUpdateException ex){
                 throw;
-            } catch (KeyNotFound ex){
+            } catch (KeyNotFoundException ex){
                 throw;
             }
-            
         }
 }

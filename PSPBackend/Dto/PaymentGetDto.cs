@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 
 public class PaymentGetDto {
     [Range(0, int.MaxValue, ErrorMessage = "Page number must be a non-negative integer.")]

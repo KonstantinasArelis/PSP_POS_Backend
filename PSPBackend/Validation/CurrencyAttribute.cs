@@ -11,7 +11,7 @@ public class CurrencyAttibute : ValidationAttribute
             {
                 return new ValidationResult("Currency has to be made of 3 characters.");
             }
-            if(!Regex.IsMatch(name, @"^[a-zA-Z ]+$"))
+            if(!Regex.IsMatch(currency, @"^[a-zA-Z ]+$"))
             {
                 return new ValidationResult("Currency has to consist of only letters.");
             }
