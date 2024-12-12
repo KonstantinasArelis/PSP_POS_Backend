@@ -5,9 +5,11 @@ using PSPBackend.Utility;
 public class OrderService
 {
         private readonly OrderRepository _orderRepository;
-        public OrderService(OrderRepository orderRepository)
+        private readonly TaxService _taxService;
+        public OrderService(OrderRepository orderRepository, TaxService taxService)
         {
-            _orderRepository = orderRepository;  
+            _orderRepository = orderRepository;
+            _taxService = taxService;
         }
 
         public OrderModel? CreateOrder(OrderModel order)
@@ -21,12 +23,12 @@ public class OrderService
             return _orderRepository.AddOrder(order);
         }
 
-        public List<OrderModel> GetOrders(OrderArgumentModel arguments)
+        public List<OrderModel> GetOrders(OrderGetDto arguments)
         {
             Console.WriteLine("LOG: Order service GetOrders");
             var query = _orderRepository.GetOrders(arguments);
-            var pageSize = arguments.Limit ?? 20;
-            var orders = query.Skip((arguments.PageNr ?? 0) * pageSize).Take(pageSize).ToList();
+            var pageSize = arguments.limit ?? 50;
+            var orders = query.Skip((arguments.page_nr ?? 0) * pageSize).Take(pageSize).ToList();
             return orders;
         }
 
@@ -54,27 +56,46 @@ public class OrderService
             }
         }
 
+        public void RecalculateOrder(int orderId)
+        {
+            OrderModel? order = _orderRepository.GetOrder(orderId);
+            if(order == null) return;
+            decimal newTotalAmount = 0;
+            decimal newTaxAmount = 0;
+            decimal newOrderDiscountPercentage = 0;
+            decimal newTotalDiscountAmount = 0;
+            foreach(OrderItemModel item in order.items){
+                decimal itemTax = 0;
+                if(item.tax_id != null){
+                    var tax = _taxService.GetTax((int) item.tax_id);
+                    if(tax != null && tax.tax_rate != null){
+                        itemTax = (decimal) tax.tax_rate;
+                    }
+                }
+                if(item.quantity != null && item.quantity != 0){
+                    decimal quantity = (decimal) item.quantity;
+                    newTotalAmount += quantity * (item.product_price ?? 0 + item.variation_price ?? 0 + itemTax - item.item_discount_amount ?? 0);
+                    newTaxAmount += quantity * itemTax;
+                    newTotalDiscountAmount += quantity * item.item_discount_amount ?? 0;
+                }
+            }
+            //newOrderDiscountPercentage calculations go here probably
+            order.total_amount = newTotalAmount;
+            order.tax_amount = newTaxAmount;
+            order.total_discount_amount = newTotalDiscountAmount;
+            //order.order_discount_percentage = newOrderDiscountPercentage;
+            _orderRepository.UpdateOrder(order);
+        }
+
         public void DeleteOrder(int orderId)
         {
             _orderRepository.DeleteOrder(orderId);
         }
 
-        public OrderItemModel? AddItem(int orderId, OrderItemModel item)
-        {
-            OrderModel? order = _orderRepository.GetOrder(orderId);
-            if(order != null)
-            {
-                if(item.id == 0) item.id = _orderRepository.GetNewOrderItemId();
-                item.order_id = orderId;
-                return _orderRepository.AddOrderItem(item);
-            }
-            return null;
-        }
-
         public IEnumerable<OrderItemModel> GetItems(int orderId, int? pageNr, int? limit)
         {
             var query = _orderRepository.GetOrderItems(orderId);
-            var pageSize = limit ?? 20;
+            var pageSize = limit ?? 50;
             return query.Skip((pageNr ?? 0) * pageSize).Take(pageSize).ToList();
         }
 
@@ -86,23 +107,42 @@ public class OrderService
             return null;
         }
 
+        public OrderItemModel? AddItem(int orderId, OrderItemModel item)
+        {
+            OrderModel? order = _orderRepository.GetOrder(orderId);
+            if(order != null)
+            {
+                if(item.id == 0) item.id = _orderRepository.GetNewOrderItemId();
+                item.order_id = orderId;
+                var addedItem = _orderRepository.AddOrderItem(item);
+                if(addedItem != null) RecalculateOrder(orderId);
+                return addedItem;
+            }
+            return null;
+        }
+
         public void UpdateItem(int orderId, int itemId, string bodyString)
         {
             OrderItemModel? item = _orderRepository.GetOrderItem(itemId);
             if(item != null && item.order_id == orderId)
             {
-                OrderItemUpdate? update = JsonConvert.DeserializeObject<OrderItemUpdate>(bodyString);
+                OrderItemUpdateDto? update = JsonConvert.DeserializeObject<OrderItemUpdateDto>(bodyString);
                 if(update != null)
                 {
                     string variationsReserialized = JsonConvert.SerializeObject(update.variations);
                     decimal variationPrice = 0;
-                    foreach(Variation variation in update.variations){
-                        variationPrice += variation.price;
+                    if(update.variations != null)
+                    {
+                        foreach(Variation variation in update.variations){
+                            variationPrice += variation.price;
+                        }
                     }
+                    
                     item.quantity = update.quantity;
                     item.variations = variationsReserialized;
                     item.variation_price = variationPrice;
                     _orderRepository.UpdateOrderItem(item);
+                    RecalculateOrder(orderId);
                 }
             }
         }
@@ -113,6 +153,7 @@ public class OrderService
             if(item != null && item.order_id == orderId)
             {
                 _orderRepository.DeleteOrderItem(itemId);
+                RecalculateOrder(orderId);
             }
         }
 }

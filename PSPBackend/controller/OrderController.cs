@@ -17,40 +17,10 @@ public class OrderController : ControllerBase
 
     [HttpGet]
     [Route("")]
-    public List<OrderModel> GetOrders(
-        [FromQuery] int? page_nr, [FromQuery] int? limit, [FromQuery] int? employee_id, 
-        [FromQuery] decimal? min_total_amount, [FromQuery] decimal? max_total_amount, 
-        [FromQuery] decimal? min_tip_amount, [FromQuery] decimal? max_tip_amount,
-        [FromQuery] decimal? min_tax_amount, [FromQuery] decimal? max_tax_amount,
-        [FromQuery] decimal? min_discount_amount, [FromQuery] decimal? max_discount_amount,
-        [FromQuery] decimal? min_order_discount_percentage, [FromQuery] decimal? max_order_discount_percentage,
-        [FromQuery] string? created_before, [FromQuery] string? created_after,
-        [FromQuery] string? closed_before, [FromQuery] string? closed_after,
-        [FromQuery] string? order_status
-        ) 
+    public List<OrderModel> GetOrders([FromQuery] OrderGetDto orderGetDto)
     {
         Console.WriteLine("LOG: Order controller GET request");
-        OrderArgumentModel arguments = new OrderArgumentModel(){
-            PageNr = page_nr,
-            Limit = limit,
-            EmployeeId = employee_id,
-            MinTotalAmount = min_total_amount,
-            MaxTotalAmount = max_total_amount,
-            MinTipAmount = min_tip_amount,
-            MaxTipAmount = max_tip_amount,
-            MinTaxAmount = min_tax_amount,
-            MaxTaxAmount = max_tax_amount,
-            MinDiscountAmount = min_discount_amount,
-            MaxDiscountAmount = max_discount_amount,
-            MinOrderDiscountPercentage = min_order_discount_percentage,
-            MaxOrderDiscountPercentage = max_order_discount_percentage,
-            CreatedBefore = created_before,
-            CreatedAfter = created_after,
-            ClosedBefore = closed_before,
-            ClosedAfter = closed_after,
-            OrderStatus = order_status
-        };
-        List<OrderModel> gottenOrders = _orderService.GetOrders(arguments);
+        List<OrderModel> gottenOrders = _orderService.GetOrders(orderGetDto);
         string stringed = "LOG: Order controller returns orders: ";
         foreach (OrderModel order in gottenOrders){
             stringed += order.ToString();
