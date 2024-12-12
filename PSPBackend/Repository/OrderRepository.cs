@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Microsoft.EntityFrameworkCore;
+using PSPBackend.Dto;
 using PSPBackend.Model;
 
 public class OrderRepository
@@ -108,12 +109,12 @@ public class OrderRepository
         }
     }
 
-    public void UpdateOrder(OrderModel orderToUpdate)
+    public OrderModel UpdateOrder(OrderModel orderToUpdate)
     {
         _context.Order.Entry(orderToUpdate).CurrentValues.SetValues(orderToUpdate);
         _context.SaveChanges();
         Console.WriteLine("LOG: repository updates an order");
-        return;
+        return orderToUpdate;
     }
 
     public OrderItemModel? AddOrderItem(OrderItemModel item)
@@ -145,12 +146,12 @@ public class OrderRepository
         }
     }
 
-    public void UpdateOrderItem(OrderItemModel itemToUpdate)
+    public OrderItemModel? UpdateOrderItem(OrderItemModel itemToUpdate)
     {
         _context.OrderItem.Entry(itemToUpdate).CurrentValues.SetValues(itemToUpdate);
         _context.SaveChanges();
         Console.WriteLine("LOG: repository updates an order item");
-        return;
+        return itemToUpdate;
     }
 
     public int GetNewOrderId()

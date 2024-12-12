@@ -1,7 +1,7 @@
 using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using PSPBackend.Model;
-using PSPBackend.Utility;
+using PSPBackend.Dto;
 public class OrderService
 {
         private readonly OrderRepository _orderRepository;
@@ -38,11 +38,11 @@ public class OrderService
             return _orderRepository.GetOrder(orderId);
         }
 
-        public void UpdateOrderStatus(int orderId, string bodyString)
+        public OrderModel? UpdateOrderStatus(int orderId, string bodyString)
         {
             Console.WriteLine("LOG: Order service GetOrder");
             OrderModel? order = _orderRepository.GetOrder(orderId);
-            if(order == null) return;
+            if(order == null) return null;
             dynamic? obj = JsonConvert.DeserializeObject<dynamic>(bodyString);
             if(obj != null)
             {
@@ -50,10 +50,12 @@ public class OrderService
                 {
                     order.order_status = obj.status;
                     if(order.order_status == "CLOSED" && order.closed_at == null) order.closed_at = DateTime.Now; 
-                    _orderRepository.UpdateOrder(order); 
+                    var returnOrder = _orderRepository.UpdateOrder(order);
+                    return returnOrder;
                 }
                 catch(RuntimeBinderException){}
             }
+            return null;
         }
 
         public void RecalculateOrder(int orderId)
@@ -121,30 +123,27 @@ public class OrderService
             return null;
         }
 
-        public void UpdateItem(int orderId, int itemId, string bodyString)
+        public OrderItemModel? UpdateItem(int orderId, int itemId, OrderItemUpdateDto updateDto)
         {
             OrderItemModel? item = _orderRepository.GetOrderItem(itemId);
             if(item != null && item.order_id == orderId)
             {
-                OrderItemUpdateDto? update = JsonConvert.DeserializeObject<OrderItemUpdateDto>(bodyString);
-                if(update != null)
+                string variationsReserialized = JsonConvert.SerializeObject(updateDto.variations);
+                decimal variationPrice = 0;
+                if(updateDto.variations != null)
                 {
-                    string variationsReserialized = JsonConvert.SerializeObject(update.variations);
-                    decimal variationPrice = 0;
-                    if(update.variations != null)
-                    {
-                        foreach(Variation variation in update.variations){
-                            variationPrice += variation.price;
-                        }
+                    foreach(VariationDto variation in updateDto.variations){
+                        variationPrice += variation.price;
                     }
-                    
-                    item.quantity = update.quantity;
-                    item.variations = variationsReserialized;
-                    item.variation_price = variationPrice;
-                    _orderRepository.UpdateOrderItem(item);
-                    RecalculateOrder(orderId);
                 }
+                item.quantity = updateDto.quantity;
+                item.variations = variationsReserialized;
+                item.variation_price = variationPrice;
+                item = _orderRepository.UpdateOrderItem(item);
+                RecalculateOrder(orderId);
+                return item;
             }
+            return null;
         }
 
         public void DeleteItem(int orderId, int itemId)

@@ -1,4 +1,4 @@
-namespace PSPBackend.Model;
+namespace PSPBackend.Dto;
 public class OrderGetDto
 {
     public int? page_nr { get; set; }
