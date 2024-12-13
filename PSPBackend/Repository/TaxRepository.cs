@@ -30,8 +30,6 @@ public class TaxRepository
         Console.WriteLine("GetTax repository");
         return _context.Tax.FirstOrDefault(d => d.id == taxId);
     }
-
-    // Modify or invalidate a tax. 
     public int UpdateTax(int taxId, TaxModel tax)
     {
         Console.WriteLine("UpdateDiscount repository");
@@ -46,7 +44,7 @@ public class TaxRepository
             return rowsAffected;
         }
     
-        return 0; // maybe another way can be used???
+        return 0;
     }
 
     public int GetNewTaxId()

@@ -10,7 +10,7 @@ public class DiscountService
         }
 
         public List<DiscountModel> GetDiscounts(
-            int page_nr, int limit, int? type, DateTime? valid_starting_from,
+            int page_nr, int limit, string? type, DateTime? valid_starting_from,
             DateTime? valid_atleast_until, string? code_hash
         )
         {
@@ -41,7 +41,7 @@ public class DiscountService
             Console.WriteLine("DeleteDiscount service");
             
             if (_discountRepository.DeleteDiscount(discountId) > 0){
-                return 1; // 1 for success? Do I need to write it in another way??
+                return 1; 
             } else {
                 return null;
             }

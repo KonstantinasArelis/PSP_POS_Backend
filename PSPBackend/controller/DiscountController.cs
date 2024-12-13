@@ -14,7 +14,7 @@ public class DiscountController : ControllerBase
 
     [HttpGet]
     public IActionResult GetDiscounts(
-        [FromQuery] int page_nr = 0, [FromQuery] int limit = 20, [FromQuery] int? type = null, 
+        [FromQuery] int page_nr = 0, [FromQuery] int limit = 20, [FromQuery] string? type = null, 
         [FromQuery] DateTime? valid_starting_from = null, [FromQuery] DateTime? valid_atleast_until = null, 
         [FromQuery] string? code_hash = null
         ) 
@@ -53,7 +53,7 @@ public class DiscountController : ControllerBase
     }
 
     [HttpPatch("{discountId}")]
-    public IActionResult UpdateDiscount(int discountId, [FromBody] DiscountModel updatedDiscount) // id should not be in this discount FromBody, case when foreign keys are not apprpriate should be considered
+    public IActionResult UpdateDiscount(int discountId, [FromBody] DiscountModel updatedDiscount) // case when foreign keys are not apprpriate should be considered
     {
         Console.WriteLine("LOG: Discount controller DELETE UpdateDiscount request");
         
@@ -74,7 +74,7 @@ public class DiscountController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CreateDiscount([FromBody] DiscountModel discount) // id should not be in this discount FromBody, case when foreign keys are not apprpriate should be considered
+    public IActionResult CreateDiscount([FromBody] DiscountModel discount) // case when foreign keys are not apprpriate should be considered
     {    
         if(!ModelState.IsValid) 
         {
