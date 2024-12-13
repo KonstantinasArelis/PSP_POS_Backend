@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PSPBackend.Model;
-// overall the code is almost the same as in Discount controller. If is generally so,
-// would not it be better to use a generic controller class for all models??
+
 [ApiController]
 [Route("[controller]")]
 public class TaxController : ControllerBase
@@ -23,7 +22,7 @@ public class TaxController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CreateTax([FromBody] TaxModel tax) // id should not be specified in the tax model
+    public IActionResult CreateTax([FromBody] TaxModel tax) 
     {
         Console.WriteLine("CreateTax controller");
         if(!ModelState.IsValid) 
@@ -53,7 +52,7 @@ public class TaxController : ControllerBase
     }
 
     [HttpPatch("{taxId}")]
-    public IActionResult UpdateTax(int taxId, [FromBody] TaxModel updatedTax) // id should not be specified in the tax model 
+    public IActionResult UpdateTax(int taxId, [FromBody] TaxModel updatedTax)
     {
         Console.WriteLine("LOG: Tax controller DELETE UpdateTax request");
         

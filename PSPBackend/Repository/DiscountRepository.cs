@@ -10,12 +10,12 @@ public class DiscountRepository
         _context = context;  
     }
 
-    public IQueryable<DiscountModel> GetDiscounts(int? type, DateTime? valid_starting_from,
-            DateTime? valid_atleast_until, string? code_hash) // do we really need page_nr and limit? And how is this supposed to work??
+    public IQueryable<DiscountModel> GetDiscounts(string? type, DateTime? valid_starting_from,
+            DateTime? valid_atleast_until, string? code_hash) 
     {
         var query = _context.Discount.AsQueryable();
 
-        if (type.HasValue)
+        if (!string.IsNullOrEmpty(type))
             query = query.Where(d => d.discount_type == type);
 
         if (valid_starting_from.HasValue)
