@@ -80,4 +80,9 @@ public class PaymentRepository
     {
         return _context.Payment.Select(p => p.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
     }
+
+    public List<PaymentModel> getPaymentsForOrder(int orderId)
+    {
+        return _context.Payment.Where(p => p.order_id == orderId).ToList();
+    }
 }
