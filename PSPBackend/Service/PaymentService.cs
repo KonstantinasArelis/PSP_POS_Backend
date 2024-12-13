@@ -57,9 +57,7 @@ public class PaymentService
 
         decimal orderTotal = currentOrder.total_amount ?? 0m;
 
-        // there are 2 comparisons, because it is not clear if order.total_amount is the same as the sum or prices from orderItems
-        // inside that order, since menu managment is not implemented yet.
-        if(orderTotal - alreadyPaid < newPaymentDto.total_amount && orderTotalFromOrderItems - alreadyPaid < newPaymentDto.total_amount)
+        if(orderTotal - alreadyPaid < newPaymentDto.total_amount)
         {
             Console.WriteLine($"Payment total amount exceeds the amount left to be paid for this order");
             throw new ValidationException("Payment total amount exceeds the amount left to be paid for this order");
@@ -88,9 +86,7 @@ public class PaymentService
         try {
             result = _paymentRepository.CreatePayment(newPaymentModel);
 
-            // there are 2 comparisons, because it is not clear if order.total_amount is the same as the sum or prices from orderItems
-            // inside that order, since menu managment is not implemented yet.
-            if(orderTotal == alreadyPaid+newPaymentDto.total_amount || orderTotalFromOrderItems == alreadyPaid+newPaymentDto.total_amount)
+            if(orderTotal == alreadyPaid+newPaymentDto.total_amount)
             {
                 Console.WriteLine("Closing order");
                 _orderService.closeOrder(newPaymentDto.order_id);
@@ -139,7 +135,7 @@ public class PaymentService
         }
         
 
-        if(alreadyPaidWithoutUpdatedPayment + updatedPaymentDto.total_amount > currentOrder.total_amount && alreadyPaidWithoutUpdatedPayment + updatedPaymentDto.total_amount > orderTotalFromOrderItems)
+        if(alreadyPaidWithoutUpdatedPayment + updatedPaymentDto.total_amount > currentOrder.total_amount)
         {
             Console.WriteLine("Updated payment makes the total payment of order exceed the total order amount");
             throw new ValidationException("Updated payment makes the total payment of order exceed the total order amount");
@@ -155,7 +151,7 @@ public class PaymentService
         try {
             result = _paymentRepository.UpdatePayment(paymentId, updatedPaymentDto);
 
-            if(currentOrder.total_amount == alreadyPaidWithoutUpdatedPayment + updatedPaymentDto.total_amount || alreadyPaidWithoutUpdatedPayment + updatedPaymentDto.total_amount == orderTotalFromOrderItems)
+            if(currentOrder.total_amount == alreadyPaidWithoutUpdatedPayment + updatedPaymentDto.total_amount)
             {
                 _orderService.closeOrder(updatedPaymentDto.order_id);
             }
