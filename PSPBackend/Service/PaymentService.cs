@@ -42,12 +42,21 @@ public class PaymentService
             throw new ValidationException("Payment method was Gift Card, but gift card was not provided");
         }
 
-        decimal alreadyPaid = this.getPaymentTotal(newPaymentDto.order_id);
+        decimal orderTotalFromOrderItems = this.getOrderTotalFromOrderItems(newPaymentDto.order_id);
+        decimal alreadyPaid = 0;
         
+        List<PaymentModel> paymentsForOrder = _paymentRepository.getPaymentsForOrder(newPaymentDto.order_id);
+
+        foreach(PaymentModel payment in paymentsForOrder)
+        {
+            alreadyPaid += payment.total_amount ?? 0;
+        }
+
         OrderModel? currentOrder = _orderService.GetOrder(newPaymentDto.order_id);
 
 
         decimal orderTotal = currentOrder.total_amount ?? 0m;
+
         if(orderTotal - alreadyPaid < newPaymentDto.total_amount)
         {
             Console.WriteLine($"Payment total amount exceeds the amount left to be paid for this order");
@@ -79,6 +88,7 @@ public class PaymentService
 
             if(orderTotal == alreadyPaid+newPaymentDto.total_amount)
             {
+                Console.WriteLine("Closing order");
                 _orderService.closeOrder(newPaymentDto.order_id);
             }
         } catch (DbUpdateException ex) {
@@ -96,7 +106,16 @@ public class PaymentService
             throw new ValidationException("Payment method was Gift Card, but gift card was not provided");
         }
 
-        decimal alreadyPaid = this.getPaymentTotal(updatedPaymentDto.order_id);
+        decimal orderTotalFromOrderItems = this.getOrderTotalFromOrderItems(updatedPaymentDto.order_id);
+        decimal alreadyPaid = 0;
+        
+        List<PaymentModel> paymentsForOrder = _paymentRepository.getPaymentsForOrder(updatedPaymentDto.order_id);
+
+        foreach(PaymentModel payment in paymentsForOrder)
+        {
+            alreadyPaid += payment.total_amount ?? 0;
+        }
+
         PaymentModel currentPayment;
 
         try{
@@ -143,7 +162,8 @@ public class PaymentService
         return result;
     }
 
-    public decimal getPaymentTotal(int orderId)
+    // iterates over order items of order to get the total price
+    public decimal getOrderTotalFromOrderItems(int orderId)
     {
         decimal totalAmount = 0;
         // TO-DO limit order to not have more that 1000 orderitems
