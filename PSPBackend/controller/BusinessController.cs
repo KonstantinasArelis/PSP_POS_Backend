@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PSPBackend.Model;
 
 [ApiController]
@@ -16,6 +17,11 @@ public class BusinessController : ControllerBase
     [HttpGet]
     public IActionResult getBusinesses ([FromQuery] BusinessGetDto businessGetDto) 
     {
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         List<BusinessModel> gottenBusinesses = _businessService.getBusinesses(businessGetDto);
 
         return Ok(gottenBusinesses);
@@ -24,24 +30,59 @@ public class BusinessController : ControllerBase
     [HttpGet("{id}")]
     public IActionResult getBusinessById ([FromRoute] int id)
     {
-        Console.WriteLine("Business controller getBusinessById with id: " + id);
-        var gottenBusiness = _businessService.getBusinessById(id);
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
-        return Ok(gottenBusiness);
+        BusinessModel result;
+        try {
+           result = _businessService.getBusinessById(id);
+        } catch (KeyNotFoundException){
+            return NotFound();
+        }
+         
+
+        return Ok(result);
     }
 
     [HttpPost]
     public IActionResult createBusiness ([FromBody] BusinessCreateDto newBusiness)
     {
-        var createdBusiness = _businessService.createBusiness(newBusiness);
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
+        BusinessModel createdBusiness;
+        
+        try {
+            createdBusiness = _businessService.createBusiness(newBusiness);
+        } catch (DbUpdateException){
+            return StatusCode(500);
+        }
+        
         return Ok(createdBusiness);
     }
 
     [HttpPatch("{id}")]
-    public IActionResult updateBusiness ([FromRoute] int businessId, [FromBody] BusinessUpdateDto updatedBusinessDto)
+    public IActionResult updateBusiness ([FromRoute] int id, [FromBody] BusinessUpdateDto updatedBusinessDto)
     {
-        var updatedBusiness = _businessService.updateBusiness(businessId, updatedBusinessDto);
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+
+        BusinessModel updatedBusiness;
+
+        try{
+            updatedBusiness = _businessService.updateBusiness(id, updatedBusinessDto);
+        } catch (DbUpdateException){
+            return StatusCode(500);
+        } catch (KeyNotFoundException){
+            return NotFound();
+        }
 
         return Ok(updatedBusiness);
     }
@@ -49,8 +90,17 @@ public class BusinessController : ControllerBase
     [HttpDelete("{id}")]
     public IActionResult deleteBusiness ([FromRoute] int businessId)
     {
-        var result = _businessService.deleteBusiness(businessId);
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
-        return Ok(result);
+        try{
+            _businessService.deleteBusiness(businessId);
+        } catch(DbUpdateException){
+            return StatusCode(500);
+        }
+
+        return Ok();
     }
 }

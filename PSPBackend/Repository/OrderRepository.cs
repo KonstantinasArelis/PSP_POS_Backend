@@ -166,4 +166,18 @@ public class OrderRepository
     {
         return _context.OrderItem.Select(o => o.id).ToList().OrderByDescending(a => a).FirstOrDefault() + 1;
     }
+
+    public OrderItemModel getOrderItemByReservationId(int reservationId)
+    {
+        OrderItemModel result = _context.OrderItem.Single(c => c.reservation_id == reservationId);
+        return result;
+    } 
+
+    public int closeOrder(int orderId)
+    {
+        OrderModel order = this.GetOrder(orderId);
+        order.order_status = "CLOSED";
+        int result = _context.SaveChanges();
+        return result;
+    }
 }

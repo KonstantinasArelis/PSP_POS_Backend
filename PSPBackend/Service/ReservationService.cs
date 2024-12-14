@@ -1,5 +1,9 @@
 using System.Linq;
 using PSPBackend.Model;
+using System.Text.RegularExpressions;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
+
 public class ReservationService
 {
         private readonly ReservationRepository _reservationRepository;
@@ -13,7 +17,6 @@ public class ReservationService
 
         public List<ReservationModel> GetReservations(ReservationGetDto reservationGetDto)
         {
-            Console.WriteLine("LOG: Reservation service GetReservation");
             var query = _reservationRepository.GetReservations(reservationGetDto); 
 
             var reservation = query.Skip(reservationGetDto.page_nr * reservationGetDto.limit).Take(reservationGetDto.limit).ToList();
@@ -22,46 +25,84 @@ public class ReservationService
 
         public ReservationModel GetReservationById(int id)
         {
-            ReservationModel gottenReservation = _reservationRepository.GetReservationById(id);
+            ReservationModel gottenReservation;
+            try {
+                gottenReservation = _reservationRepository.GetReservationById(id);
+            } catch (KeyNotFoundException ex) {
+                throw;
+            }
             return gottenReservation;
         }
 
-        public ReservationModel CreateReservation(ReservationCreateDto reservation)
+        public ReservationModel CreateReservation(ReservationCreateDto reservationDto)
         {
-            Console.WriteLine("CreateReservation service");
+            // map dto to a model for database
             ReservationModel newReservation = new ReservationModel();
-
             newReservation.id = _reservationRepository.GetNewOrderId();
-            newReservation.client_name = reservation.client_name;
-            newReservation.client_phone = reservation.client_phone;
-            newReservation.appointment_time = reservation.appointment_time;
-            newReservation.duration = reservation.duration;
-            newReservation.service_id = reservation.service_id;
+            newReservation.client_name = reservationDto.client_name;
+            newReservation.client_phone = reservationDto.client_phone;
+            newReservation.appointment_time = reservationDto.appointment_time;
+            newReservation.duration = reservationDto.duration;
+            newReservation.service_id = reservationDto.service_id;
 
-            //remove later
+            // Set some properties
+            newReservation.created_at = DateTime.Now;
+            newReservation.last_modified = DateTime.Now;
+            newReservation.ReservationStatus = reservationStatusEnum.RESERVED;
+
+            // TO-DO change once authorization is implemented
             newReservation.business_id=null;
             newReservation.employee_id=null;
+
+            // TO-DO change once menu managemet is implemented
             newReservation.service_id=null;
-            newReservation.ReservationStatus=null;
             
-            if (_reservationRepository.CreateReservation(newReservation) > 0){
+            try {
+                _reservationRepository.CreateReservation(newReservation);
+            } catch (DbUpdateException ex) {
+                Console.WriteLine("Failed to create a new reservation");
+                throw;
+            }
+            
+            try {
+                // create order for reservation
                 OrderModel newOrder = new OrderModel();
-                newOrder.id = 0;
+                newOrder.id = 0; // set to 0 because then CreateOrder finds a new id
+                newOrder.employee_id = 1; // set to 1 since authorization is not implemented yet
+
                 _orderService.CreateOrder(newOrder);
 
+                // create order item for reservation (reservations are tied to order items)
                 OrderItemModel newOrderItem = new OrderItemModel();
-                newOrderItem.reservation_id = newReservation.id;
-                _orderService.AddItem(newOrder.id, newOrderItem);
+                newOrderItem.id = 0; // set to 0 because then AddItem finds a new id
+                newOrderItem.quantity = 1;
 
-                return newReservation;
-            } else{
-                return null;
+                newOrderItem.reservation_id = newReservation.id;
+
+                // product_id, product_name, product_price, tax_id, item_discount_amount not set as they are not implemented yet
+                _orderService.AddItem(newOrder.id, newOrderItem);
+            } catch (DbUpdateException ex) {
+                throw;
             }
+            
+            return newReservation;
         }
 
-        public int UpdateReservation(int id, ReservationPatchDto reservationDto)
+        public ReservationModel UpdateReservation(int id, ReservationPatchDto reservationDto)
         {
-            int result = _reservationRepository.UpdateReservation(id, reservationDto);
-            return result;
+            try{
+                ReservationModel result = _reservationRepository.UpdateReservation(id, reservationDto);
+
+                if(reservationDto.ReservationStatus == reservationStatusEnum.CANCELLED)
+                {
+                    int orderId = _orderService.getOrderItemByReservationId(id).order_id;
+                    _orderService.DeleteOrder(orderId);
+                }
+                return result;
+            } catch (DbUpdateException ex){
+                throw;
+            } catch (KeyNotFoundException ex){
+                throw;
+            }
         }
 }
