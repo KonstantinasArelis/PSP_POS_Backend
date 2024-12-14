@@ -38,24 +38,15 @@ public class OrderService
             return _orderRepository.GetOrder(orderId);
         }
 
-        public OrderModel? UpdateOrderStatus(int orderId, string bodyString)
+        public OrderModel? UpdateOrderStatus(int orderId, string status)
         {
             Console.WriteLine("LOG: Order service GetOrder");
             OrderModel? order = _orderRepository.GetOrder(orderId);
             if(order == null) return null;
-            dynamic? obj = JsonConvert.DeserializeObject<dynamic>(bodyString);
-            if(obj != null)
-            {
-                try
-                {
-                    order.order_status = obj.status;
-                    if(order.order_status == "CLOSED" && order.closed_at == null) order.closed_at = DateTime.Now; 
-                    var returnOrder = _orderRepository.UpdateOrder(order);
-                    return returnOrder;
-                }
-                catch(RuntimeBinderException){}
-            }
-            return null;
+            order.order_status = status;
+            if(order.order_status == "CLOSED" && order.closed_at == null) order.closed_at = DateTime.Now; 
+            var returnOrder = _orderRepository.UpdateOrder(order);
+            return returnOrder;
         }
 
         public void RecalculateOrder(int orderId)

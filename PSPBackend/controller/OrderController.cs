@@ -77,11 +77,11 @@ public class OrderController : ControllerBase
 
     [HttpPost]
     [Route("{order_id}/status")]
-    public IActionResult UpdateOrderStatus(int order_id, [FromBody] string body)
+    public IActionResult UpdateOrderStatus(int order_id, [FromBody] OrderStatusDto status)
     {
         try
         {
-            var returnOrder = _orderService.UpdateOrderStatus(order_id, body);
+            var returnOrder = _orderService.UpdateOrderStatus(order_id, status.status);
             if(returnOrder != null) return Ok(returnOrder);
             return UnprocessableEntity();
         }
