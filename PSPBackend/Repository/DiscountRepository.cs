@@ -79,6 +79,40 @@ public class DiscountRepository
     public int CreateDiscount(DiscountModel discount)
     {
         Console.WriteLine("CreateDiscount repository");
+
+        // constraints
+        if(discount.discount_type == "ORDER" || discount.discount_type == "ORDER_ITEM")
+        {
+            if(string.IsNullOrEmpty(discount.code_hash))
+            {
+                Console.WriteLine("Code hash is empty when it must contain some value");
+                return 0;
+            }
+            if(discount.product_id != null)
+            {
+                Console.WriteLine("Product id must be null");
+                return 0;
+            }
+            if(discount.amount != null)
+            {
+                Console.WriteLine("Amount must be null");
+                return 0;
+            }
+        }
+        
+        if(discount.discount_type == "PRODUCT")
+        {
+            if(discount.product_id == null)
+            {
+                Console.WriteLine("Product id must not be null");
+                return 0;
+            }
+            if(discount.amount == null && discount.discount_percentage == null)
+            {
+                Console.WriteLine("Amount or percentage must not be null");
+                return 0;
+            }
+        }
         _context.Discount.Add(discount);
         int rowsAffected = _context.SaveChanges(); 
 
