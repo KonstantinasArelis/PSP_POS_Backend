@@ -10,14 +10,14 @@ public class DiscountService
         }
 
         public List<DiscountModel> GetDiscounts(
-            int page_nr, int limit, string? type, DateTime? valid_starting_from,
+            int page_nr, int limit, string? name, string? type, DateTime? valid_starting_from,
             DateTime? valid_atleast_until, string? code_hash
         )
         {
             
             Console.WriteLine("LOG: Discount service GetDiscounts");
             var query = _discountRepository.GetDiscounts(
-                type, valid_starting_from, valid_atleast_until, code_hash
+                name, type, valid_starting_from, valid_atleast_until, code_hash
             ); 
 
             var discounts = query.Skip(page_nr * limit).Take(limit).ToList();

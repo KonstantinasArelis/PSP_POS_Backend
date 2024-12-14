@@ -87,6 +87,15 @@ public class OrderController : ControllerBase
         _orderService.UpdateOrderStatus(order_id, body);
     }
 
+    [HttpPost]
+    [Route("{order_id}/discountPercentage")]
+    public void UpdateOrderDiscount(int order_id, [FromBody] string body)
+    {
+        Console.WriteLine("LOG: Discount controller UPDATE order discount " + body);
+
+        _orderService.UpdateOrderDiscount(order_id, body);
+    }
+
     [HttpDelete]
     [Route("{order_id}")]
     public void DeleteOrder(int order_id)
