@@ -55,7 +55,7 @@ public class DiscountController : ControllerBase
     [HttpPatch("{discountId}")]
     public IActionResult UpdateDiscount(int discountId, [FromBody] DiscountModel updatedDiscount) // case when foreign keys are not apprpriate should be considered
     {
-        Console.WriteLine("LOG: Discount controller DELETE UpdateDiscount request");
+        Console.WriteLine("LOG: Discount controller UPDATE UpdateDiscount request");
         
         if (!ModelState.IsValid)
         {
