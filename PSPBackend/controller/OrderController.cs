@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PSPBackend.Model;
-using Newtonsoft.Json;
 using Microsoft.CSharp.RuntimeBinder;
+using PSPBackend.Dto;
+using Newtonsoft.Json;
 
 
 [ApiController]
@@ -17,74 +18,77 @@ public class OrderController : ControllerBase
 
     [HttpGet]
     [Route("")]
-    public List<OrderModel> GetOrders(
-        [FromQuery] int? page_nr, [FromQuery] int? limit, [FromQuery] int? employee_id, 
-        [FromQuery] decimal? min_total_amount, [FromQuery] decimal? max_total_amount, 
-        [FromQuery] decimal? min_tip_amount, [FromQuery] decimal? max_tip_amount,
-        [FromQuery] decimal? min_tax_amount, [FromQuery] decimal? max_tax_amount,
-        [FromQuery] decimal? min_discount_amount, [FromQuery] decimal? max_discount_amount,
-        [FromQuery] decimal? min_order_discount_percentage, [FromQuery] decimal? max_order_discount_percentage,
-        [FromQuery] string? created_before, [FromQuery] string? created_after,
-        [FromQuery] string? closed_before, [FromQuery] string? closed_after,
-        [FromQuery] string? order_status
-        ) 
+    public IActionResult GetOrders([FromQuery] OrderGetDto orderGetDto)
     {
-        Console.WriteLine("LOG: Order controller GET request");
-        OrderArgumentModel arguments = new OrderArgumentModel(){
-            PageNr = page_nr,
-            Limit = limit,
-            EmployeeId = employee_id,
-            MinTotalAmount = min_total_amount,
-            MaxTotalAmount = max_total_amount,
-            MinTipAmount = min_tip_amount,
-            MaxTipAmount = max_tip_amount,
-            MinTaxAmount = min_tax_amount,
-            MaxTaxAmount = max_tax_amount,
-            MinDiscountAmount = min_discount_amount,
-            MaxDiscountAmount = max_discount_amount,
-            MinOrderDiscountPercentage = min_order_discount_percentage,
-            MaxOrderDiscountPercentage = max_order_discount_percentage,
-            CreatedBefore = created_before,
-            CreatedAfter = created_after,
-            ClosedBefore = closed_before,
-            ClosedAfter = closed_after,
-            OrderStatus = order_status
-        };
-        List<OrderModel> gottenOrders = _orderService.GetOrders(arguments);
-        string stringed = "LOG: Order controller returns orders: ";
-        foreach (OrderModel order in gottenOrders){
-            stringed += order.ToString();
+        try
+        {
+            Console.WriteLine("LOG: Order controller GET request");
+            List<OrderModel> gottenOrders = _orderService.GetOrders(orderGetDto);
+            string stringed = "LOG: Order controller returns orders: ";
+            foreach (OrderModel order in gottenOrders){
+                stringed += order.ToString();
+            }
+            Console.WriteLine(stringed);
+            return Ok(gottenOrders);
         }
-        Console.WriteLine(stringed);
-        return gottenOrders;
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpGet]
     [Route("{order_id}")]
-    public OrderModel? GetOrder(int order_id)
+    public IActionResult GetOrder(int order_id)
     {
-        Console.WriteLine("LOG: Order controller GET request");
-        OrderModel? gottenOrder = _orderService.GetOrder(order_id);
-        Console.WriteLine("LOG: Order controller returns order: " + gottenOrder);
-        return gottenOrder;
+        
+        try
+        {
+            Console.WriteLine("LOG: Order controller GET request");
+            OrderModel? gottenOrder = _orderService.GetOrder(order_id);
+            if(gottenOrder != null)
+            {
+                Console.WriteLine("LOG: Order controller returns order: " + gottenOrder);
+                return Ok(gottenOrder);
+            }
+            else return NotFound();
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPost]
-    public OrderModel? CreateOrder([FromBody] string body)
+    public IActionResult CreateOrder([FromBody] OrderModel order)
     {
-        //string json_string = new StreamReader(Request.Body).ReadToEnd();
-        Console.WriteLine("|||||||||||||||||creting order");
-        OrderModel? order = JsonConvert.DeserializeObject<OrderModel>(body);
-        if(order != null) return _orderService.CreateOrder(order);
-        return null;
+        
+        try
+        {
+            var result = _orderService.CreateOrder(order);
+            if(result != null) return StatusCode(StatusCodes.Status201Created, result);
+            return BadRequest();
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPost]
     [Route("{order_id}/status")]
-    public void UpdateOrderStatus(int order_id, [FromBody] string body)
+    public IActionResult UpdateOrderStatus(int order_id, [FromBody] OrderStatusDto status)
     {
-        //string bodyString = new StreamReader(Request.Body).ReadToEnd();
-        _orderService.UpdateOrderStatus(order_id, body);
+        try
+        {
+            var returnOrder = _orderService.UpdateOrderStatus(order_id, status.status);
+            if(returnOrder != null) return Ok(returnOrder);
+            return UnprocessableEntity();
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPost]
@@ -98,49 +102,99 @@ public class OrderController : ControllerBase
 
     [HttpDelete]
     [Route("{order_id}")]
-    public void DeleteOrder(int order_id)
+    public IActionResult DeleteOrder(int order_id)
     {
-        _orderService.DeleteOrder(order_id);
+        
+        try
+        {
+            _orderService.DeleteOrder(order_id);
+            return NoContent();
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPost]
     [Route("{order_id}/orderItem")]
-    public OrderItemModel? AddItemToOrder(int order_id, [FromBody] string body)
+    public IActionResult AddItemToOrder(int order_id, [FromBody] OrderItemCreateDto item)
     {
-        //string json_string = new StreamReader(Request.Body).ReadToEnd();
-        OrderItemModel? item = JsonConvert.DeserializeObject<OrderItemModel>(body);
-        if(item != null)
-            return _orderService.AddItem(order_id, item);
-        return null;
+
+        try
+        {
+            var result = _orderService.AddItem(order_id, item);
+            if(result != null) return StatusCode(StatusCodes.Status201Created, result);
+            return BadRequest();
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpGet]
     [Route("{order_id}/orderItem")]
-    public IEnumerable<OrderItemModel> GetOrderItems(int order_id, [FromQuery] int? page_nr, [FromQuery] int? limit)
+    public IActionResult GetOrderItems(int order_id, [FromQuery] int? page_nr, [FromQuery] int? limit)
     {
-        return _orderService.GetItems(order_id, page_nr, limit);
+        try
+        {
+            var result = _orderService.GetItems(order_id, page_nr, limit);
+            if(result != null) return Ok(result);
+            return NotFound();
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpGet]
     [Route("{order_id}/orderItem/{item_id}")]
-    public OrderItemModel? GetOrderItem(int order_id, int item_id)
+    public IActionResult GetOrderItem(int order_id, int item_id)
     {
-        return _orderService.GetItem(order_id, item_id);
+        try
+        {
+            var result = _orderService.GetItem(order_id, item_id);
+            if(result != null) return Ok(result);
+            return NotFound();
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPatch]
     [Route("{order_id}/orderItem/{item_id}")]
-    public void UpdateOrderItem(int order_id, int item_id, [FromBody] string body)
+    public IActionResult UpdateOrderItem(int order_id, int item_id, [FromBody] string body)
     {
-        //string bodyString = new StreamReader(Request.Body).ReadToEnd();
-        _orderService.UpdateItem(order_id, item_id, body);
+        try
+        {
+            OrderItemUpdateDto? updateDto = JsonConvert.DeserializeObject<OrderItemUpdateDto>(body);
+            var result = _orderService.UpdateItem(order_id, item_id, updateDto);
+            if(result != null) return Ok(result);
+            return NotFound();
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpDelete]
     [Route("{order_id}/orderItem/{item_id}")]
-    public void DeleteOrderItem(int order_id, int item_id)
+    public IActionResult DeleteOrderItem(int order_id, int item_id)
     {
-        _orderService.DeleteItem(order_id, item_id);
+        try
+        {
+            _orderService.DeleteItem(order_id, item_id);
+            return NoContent();
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
 }
