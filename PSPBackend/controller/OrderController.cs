@@ -109,7 +109,7 @@ public class OrderController : ControllerBase
 
     [HttpPost]
     [Route("{order_id}/orderItem")]
-    public IActionResult AddItemToOrder(int order_id, [FromBody] OrderItemModel item)
+    public IActionResult AddItemToOrder(int order_id, [FromBody] OrderItemCreateDto item)
     {
 
         try

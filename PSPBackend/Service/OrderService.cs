@@ -123,6 +123,40 @@ public class OrderService
             return null;
         }
 
+        public OrderItemModel? AddItem(int orderId, OrderItemCreateDto itemDto)
+        {
+            OrderModel? order = _orderRepository.GetOrder(orderId);
+            if(order != null)
+            {
+                int newId = _orderRepository.GetNewOrderItemId();
+                string? newProductName = null; //TODO: figure out the product name when menu stuff is done
+                decimal? newProductPrice = null; //TODO: figure out the product price when menu stuff is done
+                int? newTaxId = null; //TODO: figure out the item's taxes when tax stuff is done
+                decimal newVariationPrice = 0;
+                foreach(var variation in itemDto.variations){
+                    newVariationPrice += variation.price;
+                }
+                decimal? newItemDiscountAmount = null; //TODO: figure out the item's discount when discount stuff is done
+                OrderItemModel newItem = new OrderItemModel(){
+                    id=newId, 
+                    order_id=orderId,
+                    product_id=itemDto.product_id,
+                    reservation_id = null,
+                    quantity = itemDto.quantity,
+                    variations = JsonConvert.SerializeObject(itemDto.variations),
+                    product_name = newProductName,
+                    product_price = newProductPrice,
+                    tax_id = newTaxId,
+                    variation_price = newVariationPrice,
+                    item_discount_amount = newItemDiscountAmount
+                };
+                var addedItem = _orderRepository.AddOrderItem(newItem);
+                if(addedItem != null) RecalculateOrder(orderId);
+                return addedItem;
+            }
+            return null;
+        }
+
         public OrderItemModel? UpdateItem(int orderId, int itemId, OrderItemUpdateDto updateDto)
         {
             OrderItemModel? item = _orderRepository.GetOrderItem(itemId);
