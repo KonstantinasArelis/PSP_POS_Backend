@@ -1,3 +1,5 @@
+using NLog.Web;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("connectionStrings.json", optional: true, reloadOnChange: true);
@@ -16,6 +18,9 @@ builder.Services.AddCors(options =>
                .AllowAnyMethod();
     });
 });
+
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 
 builder.Services.AddControllers();
 
@@ -43,8 +48,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-Console.WriteLine("BACKEND LOGAI ATSIRANDA CIA");
 
 app.UseHttpsRedirection();
 

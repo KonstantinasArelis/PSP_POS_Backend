@@ -8,10 +8,12 @@ using PSPBackend.Model;
 public class BusinessController : ControllerBase
 {
     private readonly BusinessService _businessService;
+    private readonly ILogger<BusinessController> _logger;
 
-    public BusinessController (BusinessService businessService) 
+    public BusinessController (BusinessService businessService, ILogger<BusinessController> logger) 
     {
         _businessService = businessService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -19,11 +21,13 @@ public class BusinessController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
+            _logger.LogError("BusinessController encountered a problem in GetBusinesses (returning status 400)");
             return BadRequest(ModelState);
         }
 
         List<BusinessModel> gottenBusinesses = _businessService.getBusinesses(businessGetDto);
 
+        _logger.LogInformation("BusinessController successfully executed GetBusinesses");
         return Ok(gottenBusinesses);
     }
 
@@ -32,17 +36,19 @@ public class BusinessController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
+            _logger.LogError("BusinessController encountered a problem in GetBusinessById (returning status 400)");
             return BadRequest(ModelState);
         }
 
         BusinessModel result;
         try {
            result = _businessService.getBusinessById(id);
-        } catch (KeyNotFoundException){
+        } catch (KeyNotFoundException e){
+            _logger.LogError("BusinessController encountered a problem in GetBusinessById (returning status 404) | " + e.Message);
             return NotFound();
         }
          
-
+        _logger.LogInformation("BusinessController successfully executed GetBusinessById");
         return Ok(result);
     }
 
@@ -51,6 +57,7 @@ public class BusinessController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
+            _logger.LogError("BusinessController encountered a problem in CreateBusiness (returning status 400)");
             return BadRequest(ModelState);
         }
 
@@ -58,10 +65,12 @@ public class BusinessController : ControllerBase
         
         try {
             createdBusiness = _businessService.createBusiness(newBusiness);
-        } catch (DbUpdateException){
+        } catch (DbUpdateException e){
+            _logger.LogError("BusinessController encountered a problem in CreateBusiness (returning status 500) | " + e.Message);
             return StatusCode(500);
         }
         
+        _logger.LogInformation("BusinessController successfully executed CreateBusiness");
         return Ok(createdBusiness);
     }
 
@@ -70,6 +79,7 @@ public class BusinessController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
+            _logger.LogError("BusinessController encountered a problem in UpdateBusiness (returning status 400)");
             return BadRequest(ModelState);
         }
 
@@ -78,12 +88,15 @@ public class BusinessController : ControllerBase
 
         try{
             updatedBusiness = _businessService.updateBusiness(id, updatedBusinessDto);
-        } catch (DbUpdateException){
+        } catch (DbUpdateException e){
+            _logger.LogError("BusinessController encountered a problem in UpdateBusiness (returning status 500) | " + e.Message);
             return StatusCode(500);
-        } catch (KeyNotFoundException){
+        } catch (KeyNotFoundException e){
+            _logger.LogError("BusinessController encountered a problem in UpdateBusiness (returning status 404) | " + e.Message);
             return NotFound();
         }
 
+        _logger.LogInformation("BusinessController successfully executed UpdateBusiness");
         return Ok(updatedBusiness);
     }
 
@@ -92,15 +105,18 @@ public class BusinessController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
+            _logger.LogError("BusinessController encountered a problem in DeleteBusiness (returning status 400)");
             return BadRequest(ModelState);
         }
 
         try{
             _businessService.deleteBusiness(businessId);
-        } catch(DbUpdateException){
+        } catch(DbUpdateException e){
+            _logger.LogError("BusinessController encountered a problem in DeleteBusiness (returning status 500) | " + e.Message);
             return StatusCode(500);
         }
 
+        _logger.LogInformation("BusinessController successfully executed DeleteBusiness");
         return Ok();
     }
 }
