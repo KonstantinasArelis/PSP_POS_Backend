@@ -1,3 +1,6 @@
+using PSPBackend.Repository;
+using PSPBackend.Service;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("connectionStrings.json", optional: true, reloadOnChange: true);
@@ -9,11 +12,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
+    options.AddDefaultPolicy(policyBuilder =>
     {
-        builder.WithOrigins("http://localhost:3000")
-               .AllowAnyHeader()
-               .AllowAnyMethod();
+        policyBuilder.AllowAnyOrigin() // Permissive: allows requests from any origin
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
 
@@ -32,9 +35,12 @@ builder.Services.AddTransient<BusinessRepository>();
 builder.Services.AddTransient<BusinessService>();
 builder.Services.AddTransient<PaymentService>();
 builder.Services.AddTransient<PaymentRepository>();
+builder.Services.AddTransient<MenuRepository>();
+builder.Services.AddTransient<MenuService>();
 
 var app = builder.Build();
 
+// Ensure CORS middleware is applied BEFORE routing and other middleware
 app.UseCors();
 
 // Configure the HTTP request pipeline.

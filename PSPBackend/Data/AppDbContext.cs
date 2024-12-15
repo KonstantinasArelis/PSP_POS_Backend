@@ -19,5 +19,6 @@ public class AppDbContext : DbContext
     public DbSet<OrderItemModel> OrderItem {get; set; }
     public DbSet<BusinessModel> Business {get; set; }
     public DbSet<PaymentModel> Payment {get; set; }
+    public DbSet<ProductModel> Product {get; set; }
 
 }
