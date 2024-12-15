@@ -10,10 +10,12 @@ using Newtonsoft.Json;
 public class OrderController : ControllerBase
 {
     private readonly OrderService _orderService;
+    private readonly ILogger<OrderController> _logger;
 
-    public OrderController(OrderService orderService)
+    public OrderController(OrderService orderService, ILogger<OrderController> logger)
     {
         _orderService = orderService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -22,17 +24,13 @@ public class OrderController : ControllerBase
     {
         try
         {
-            Console.WriteLine("LOG: Order controller GET request");
             List<OrderModel> gottenOrders = _orderService.GetOrders(orderGetDto);
-            string stringed = "LOG: Order controller returns orders: ";
-            foreach (OrderModel order in gottenOrders){
-                stringed += order.ToString();
-            }
-            Console.WriteLine(stringed);
+            _logger.LogInformation("OrderController successfully executed GetOrders");
             return Ok(gottenOrders);
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError("OrderController encountered an exception in GetOrders: " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -44,17 +42,17 @@ public class OrderController : ControllerBase
         
         try
         {
-            Console.WriteLine("LOG: Order controller GET request");
             OrderModel? gottenOrder = _orderService.GetOrder(order_id);
             if(gottenOrder != null)
             {
-                Console.WriteLine("LOG: Order controller returns order: " + gottenOrder);
+                _logger.LogInformation("OrderController successfully executed GetOrder");
                 return Ok(gottenOrder);
             }
             else return NotFound();
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError("OrderController encountered an exception in GetOrder: " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -66,11 +64,16 @@ public class OrderController : ControllerBase
         try
         {
             var result = _orderService.CreateOrder(order);
-            if(result != null) return StatusCode(StatusCodes.Status201Created, result);
+            if(result != null)
+            {
+                _logger.LogInformation("OrderController successfully executed CreateOrder");
+                return StatusCode(StatusCodes.Status201Created, result);
+            } 
             return BadRequest();
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError("OrderController encountered an exception in CreateOrder: " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -82,11 +85,16 @@ public class OrderController : ControllerBase
         try
         {
             var returnOrder = _orderService.UpdateOrderStatus(order_id, status.status);
-            if(returnOrder != null) return Ok(returnOrder);
+            if(returnOrder != null)
+            {
+                _logger.LogInformation("OrderController successfully executed UpdateOrder");
+                return Ok(returnOrder);
+            } 
             return UnprocessableEntity();
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError("OrderController got an exception in UpdateOrderStatus: " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -99,10 +107,12 @@ public class OrderController : ControllerBase
         try
         {
             _orderService.DeleteOrder(order_id);
+            _logger.LogInformation("OrderController successfully executed DeleteOrder");
             return NoContent();
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError("OrderController got an exception in DeleteOrder: " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -111,15 +121,19 @@ public class OrderController : ControllerBase
     [Route("{order_id}/orderItem")]
     public IActionResult AddItemToOrder(int order_id, [FromBody] OrderItemCreateDto item)
     {
-
         try
         {
             var result = _orderService.AddItem(order_id, item);
-            if(result != null) return StatusCode(StatusCodes.Status201Created, result);
+            if(result != null)
+            {
+                _logger.LogInformation("OrderController successfully executed AddItemToOrder");
+                return StatusCode(StatusCodes.Status201Created, result);
+            } 
             return BadRequest();
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError("OrderController got an exception in AddItemToOrder: " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -131,11 +145,12 @@ public class OrderController : ControllerBase
         try
         {
             var result = _orderService.GetItems(order_id, page_nr, limit);
-            if(result != null) return Ok(result);
-            return NotFound();
+            _logger.LogInformation("OrderController successfully executed GetOrderItems");
+            return Ok(result);
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError("OrderController got an exception in GetOrderItems: " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -147,11 +162,16 @@ public class OrderController : ControllerBase
         try
         {
             var result = _orderService.GetItem(order_id, item_id);
-            if(result != null) return Ok(result);
+            if(result != null)
+            {
+                _logger.LogInformation("OrderController successfully executed GetOrderItem");
+                return Ok(result);
+            }
             return NotFound();
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError("OrderController got an exception in GetOrderItem: " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -164,11 +184,16 @@ public class OrderController : ControllerBase
         {
             OrderItemUpdateDto? updateDto = JsonConvert.DeserializeObject<OrderItemUpdateDto>(body);
             var result = _orderService.UpdateItem(order_id, item_id, updateDto);
-            if(result != null) return Ok(result);
+            if(result != null)
+            {
+                _logger.LogInformation("OrderController successfully executed UpdateOrderItem");
+                return Ok(result);
+            }
             return NotFound();
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError("OrderController got an exception in UpdateOrderItem: " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -180,10 +205,12 @@ public class OrderController : ControllerBase
         try
         {
             _orderService.DeleteItem(order_id, item_id);
+            _logger.LogInformation("OrderController successfully executed DeleteOrderItem");
             return NoContent();
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError("OrderController got an exception in DeleteOrderItem: " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

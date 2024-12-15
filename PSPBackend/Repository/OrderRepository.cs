@@ -81,7 +81,6 @@ public class OrderRepository
         }
         if (arguments.order_status != null)
             query = query.Where(o => o.order_status == arguments.order_status);
-        Console.WriteLine("LOG: repository returns orders");
         return query; 
     }
 
@@ -104,7 +103,6 @@ public class OrderRepository
             }
             _context.Remove(order);
             _context.SaveChanges();
-            Console.WriteLine("LOG: repository deletes an order");
             return;
         }
     }
@@ -113,7 +111,6 @@ public class OrderRepository
     {
         _context.Order.Entry(orderToUpdate).CurrentValues.SetValues(orderToUpdate);
         _context.SaveChanges();
-        Console.WriteLine("LOG: repository updates an order");
         return orderToUpdate;
     }
 
@@ -141,7 +138,6 @@ public class OrderRepository
         {
             _context.Remove(order);
             _context.SaveChanges();
-            Console.WriteLine("LOG: repository deletes an order item");
             return;
         }
     }
@@ -150,7 +146,6 @@ public class OrderRepository
     {
         _context.OrderItem.Entry(itemToUpdate).CurrentValues.SetValues(itemToUpdate);
         _context.SaveChanges();
-        Console.WriteLine("LOG: repository updates an order item");
         return itemToUpdate;
     }
 

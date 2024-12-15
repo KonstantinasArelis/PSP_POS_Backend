@@ -14,7 +14,6 @@ public class OrderService
 
         public OrderModel? CreateOrder(OrderModel order)
         {
-            Console.WriteLine("LOG: service creates order id is " + order.id);
             if(order.id == 0)
             {
                 order.id = _orderRepository.GetNewOrderId();
@@ -25,7 +24,6 @@ public class OrderService
 
         public List<OrderModel> GetOrders(OrderGetDto arguments)
         {
-            Console.WriteLine("LOG: Order service GetOrders");
             var query = _orderRepository.GetOrders(arguments);
             var pageSize = arguments.limit ?? 50;
             var orders = query.Skip((arguments.page_nr ?? 0) * pageSize).Take(pageSize).ToList();
@@ -34,13 +32,11 @@ public class OrderService
 
         public OrderModel? GetOrder(int orderId)
         {
-            Console.WriteLine("LOG: Order service GetOrder");
             return _orderRepository.GetOrder(orderId);
         }
 
         public OrderModel? UpdateOrderStatus(int orderId, string status)
         {
-            Console.WriteLine("LOG: Order service GetOrder");
             OrderModel? order = _orderRepository.GetOrder(orderId);
             if(order == null) return null;
             order.order_status = status;
@@ -94,7 +90,6 @@ public class OrderService
 
         public OrderItemModel? GetItem(int orderId, int itemId)
         {
-            Console.WriteLine("LOG: Order service GetOrder");
             var item =  _orderRepository.GetOrderItem(itemId);
             if(item != null && item.order_id == orderId) return item;
             return null;
