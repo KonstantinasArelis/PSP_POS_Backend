@@ -1,3 +1,5 @@
+using PSPBackend.Repository;
+using PSPBackend.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -6,6 +8,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using NLog.Web;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,9 +21,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
+    options.AddDefaultPolicy(policyBuilder =>
     {
-        builder.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
+        policyBuilder.AllowAnyOrigin() // Permissive: allows requests from any origin
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
 
@@ -44,6 +49,8 @@ builder.Services.AddTransient<BusinessRepository>();
 builder.Services.AddTransient<BusinessService>();
 builder.Services.AddTransient<PaymentService>();
 builder.Services.AddTransient<PaymentRepository>();
+builder.Services.AddTransient<MenuRepository>();
+builder.Services.AddTransient<MenuService>();
 
 builder.Services.AddAuthorization();
 
@@ -128,6 +135,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// Ensure CORS middleware is applied BEFORE routing and other middleware
 app.UseCors();
 
 // Configure the HTTP request pipeline.
