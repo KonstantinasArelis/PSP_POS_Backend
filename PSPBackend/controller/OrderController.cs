@@ -30,7 +30,7 @@ public class OrderController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError("OrderController encountered an exception in GetOrders: " + e.Message);
+            _logger.LogError("OrderController encountered a problem in GetOrders (returning status 500) | " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -48,11 +48,15 @@ public class OrderController : ControllerBase
                 _logger.LogInformation("OrderController successfully executed GetOrder");
                 return Ok(gottenOrder);
             }
-            else return NotFound();
+            else 
+            {
+                _logger.LogError("OrderController encountered a problem in GetOrder (returning status 404)");
+                return NotFound();
+            }
         }
         catch (Exception e)
         {
-            _logger.LogError("OrderController encountered an exception in GetOrder: " + e.Message);
+            _logger.LogError("OrderController encountered a problem in GetOrder (returning status 500) | " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -68,12 +72,13 @@ public class OrderController : ControllerBase
             {
                 _logger.LogInformation("OrderController successfully executed CreateOrder");
                 return StatusCode(StatusCodes.Status201Created, result);
-            } 
+            }
+            _logger.LogError("OrderController encountered a problem in CreateOrder (returning status 400)"); 
             return BadRequest();
         }
         catch (Exception e)
         {
-            _logger.LogError("OrderController encountered an exception in CreateOrder: " + e.Message);
+            _logger.LogError("OrderController encountered a problem in CreateOrder (returning status 500) | " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -87,25 +92,34 @@ public class OrderController : ControllerBase
             var returnOrder = _orderService.UpdateOrderStatus(order_id, status.status);
             if(returnOrder != null)
             {
-                _logger.LogInformation("OrderController successfully executed UpdateOrder");
+                _logger.LogInformation("OrderController successfully executed UpdateOrderStatus");
                 return Ok(returnOrder);
             } 
+            _logger.LogError("OrderController encountered a problem in UpdateOrderStatus (returning status 422)");
             return UnprocessableEntity();
         }
         catch (Exception e)
         {
-            _logger.LogError("OrderController got an exception in UpdateOrderStatus: " + e.Message);
+            _logger.LogError("OrderController encountered a problem in UpdateOrderStatus (returning status 500) | " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
     [HttpPost]
     [Route("{order_id}/discountPercentage")]
-    public void UpdateOrderDiscount(int order_id, [FromBody] string body)
+    public IActionResult UpdateOrderDiscount(int order_id, [FromBody] string body)
     {
-        Console.WriteLine("LOG: Discount controller UPDATE order discount " + body);
-
-        _orderService.UpdateOrderDiscount(order_id, body);
+        try
+        {
+            _orderService.UpdateOrderDiscount(order_id, body);
+            _logger.LogInformation("OrderController successfully executed UpdateOrderDiscount");
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in UpdateOrderDiscount (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpDelete]
@@ -121,7 +135,7 @@ public class OrderController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError("OrderController got an exception in DeleteOrder: " + e.Message);
+            _logger.LogError("OrderController encountered a problem in DeleteOrder (returning status 500) | " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -138,11 +152,12 @@ public class OrderController : ControllerBase
                 _logger.LogInformation("OrderController successfully executed AddItemToOrder");
                 return StatusCode(StatusCodes.Status201Created, result);
             } 
+            _logger.LogError("OrderController encountered a problem in AddItemToOrder (returning status 404)");
             return BadRequest();
         }
         catch (Exception e)
         {
-            _logger.LogError("OrderController got an exception in AddItemToOrder: " + e.Message);
+            _logger.LogError("OrderController encountered a problem in AddItemToOrder (returning status 500) | " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -159,7 +174,7 @@ public class OrderController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError("OrderController got an exception in GetOrderItems: " + e.Message);
+            _logger.LogError("OrderController encountered a problem in GetOrderItems (returning status 500) | " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -176,11 +191,12 @@ public class OrderController : ControllerBase
                 _logger.LogInformation("OrderController successfully executed GetOrderItem");
                 return Ok(result);
             }
+            _logger.LogError("OrderController encountered a problem in GetOrderItem (returning status 404)");
             return NotFound();
         }
         catch (Exception e)
         {
-            _logger.LogError("OrderController got an exception in GetOrderItem: " + e.Message);
+            _logger.LogError("OrderController encountered a problem in GetOrderItem (returning status 500) | " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -198,11 +214,12 @@ public class OrderController : ControllerBase
                 _logger.LogInformation("OrderController successfully executed UpdateOrderItem");
                 return Ok(result);
             }
+            _logger.LogError("OrderController encountered a problem in UpdateOrderItem (returning status 404)");
             return NotFound();
         }
         catch (Exception e)
         {
-            _logger.LogError("OrderController got an exception in UpdateOrderItem: " + e.Message);
+            _logger.LogError("OrderController encountered a problem in UpdateOrderItem (returning status 500) | " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -219,7 +236,7 @@ public class OrderController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError("OrderController got an exception in DeleteOrderItem: " + e.Message);
+            _logger.LogError("OrderController encountered a problem in DeleteOrderItem (returning status 500) | " + e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

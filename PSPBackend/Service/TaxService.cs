@@ -11,7 +11,6 @@ public class TaxService
 
          public List<TaxModel> GetTaxes(int page_nr, int limit, bool? isValid)
         {
-            Console.WriteLine("LOG: Tax service GetTaxes");
             var query = _taxRepository.GetTaxes(isValid); 
 
             var taxes = query.Skip(page_nr * limit).Take(limit).ToList(); 
@@ -19,9 +18,7 @@ public class TaxService
         }
 
         public TaxModel? CreateTax(TaxModel tax)
-        {
-            Console.WriteLine("CreateTax service");
-            
+        {            
             if(tax.id == 0)
             {
                 tax.id = _taxRepository.GetNewTaxId();
@@ -37,7 +34,6 @@ public class TaxService
         public TaxModel? GetTax(int taxId)
         {
             
-            Console.WriteLine("LOG: Tax service GetTax");
             var tax = _taxRepository.GetTax(taxId); 
             if(tax is null){
                 return null;
@@ -48,7 +44,6 @@ public class TaxService
 
         public TaxModel? UpdateTax(int taxId, TaxModel tax)
         {
-            Console.WriteLine("UpdateTax service");
             
             if (_taxRepository.UpdateTax(taxId, tax) > 0){
                 return tax;

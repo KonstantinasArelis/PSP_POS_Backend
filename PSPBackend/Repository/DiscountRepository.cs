@@ -30,19 +30,16 @@ public class DiscountRepository
         if (!string.IsNullOrEmpty(code_hash))
             query = query.Where(d => d.code_hash == code_hash);
 
-        Console.WriteLine("LOG: repository returns Discounts");
         return query; 
     }
 
     public DiscountModel? GetDiscount(int discountId)
     {
-        Console.WriteLine("LOG: repository returns Discount by id:" + discountId);
         return _context.Discount.FirstOrDefault(d => d.id == discountId);
     }
     
     public int DeleteDiscount(int discountId)
     {
-        Console.WriteLine("DeleteDiscount repository");
         DiscountModel? discount = GetDiscount(discountId);
         if(discount != null) 
         {
@@ -55,7 +52,6 @@ public class DiscountRepository
 
     public int UpdateDiscount(int discountId, DiscountModel discount)
     {
-        Console.WriteLine("UpdateDiscount repository");
         DiscountModel? oldDiscount = GetDiscount(discountId);
         if(oldDiscount != null) 
         {
@@ -78,24 +74,20 @@ public class DiscountRepository
 
     public int CreateDiscount(DiscountModel discount)
     {
-        Console.WriteLine("CreateDiscount repository");
 
         // constraints
         if(discount.discount_type == "ORDER" || discount.discount_type == "ORDER_ITEM")
         {
             if(string.IsNullOrEmpty(discount.code_hash))
             {
-                Console.WriteLine("Code hash is empty when it must contain some value");
                 return 0;
             }
             if(discount.product_id != null)
             {
-                Console.WriteLine("Product id must be null");
                 return 0;
             }
             if(discount.amount != null)
             {
-                Console.WriteLine("Amount must be null");
                 return 0;
             }
         }
@@ -104,12 +96,10 @@ public class DiscountRepository
         {
             if(discount.product_id == null)
             {
-                Console.WriteLine("Product id must not be null");
                 return 0;
             }
             if(discount.amount == null && discount.discount_percentage == null)
             {
-                Console.WriteLine("Amount or percentage must not be null");
                 return 0;
             }
         }
