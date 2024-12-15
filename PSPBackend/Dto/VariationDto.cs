@@ -1,6 +1,6 @@
-namespace PSPBackend.Utility;
+namespace PSPBackend.Dto;
 
-public class Variation
+public class VariationDto
 {
     public string name {get;set;}
     public int price {get;set;}

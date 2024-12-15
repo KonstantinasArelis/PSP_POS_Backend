@@ -7,6 +7,7 @@ namespace PSPBackend.Model
     {
         [Key]
         public int id { get; set; }
+        public required string? discount_name { get; set; }
        
         public int? business_id { get; set; } 
 
@@ -22,6 +23,6 @@ namespace PSPBackend.Model
 
         public DateTime? valid_until { get; set; }
 
-        public string? code_hash { get; set; } // what code_hash is for?????
+        public string? code_hash { get; set; } // discount "coupon". Must be provided when applying a discount if not null
     }
 }

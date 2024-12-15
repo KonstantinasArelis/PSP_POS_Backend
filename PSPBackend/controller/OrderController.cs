@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PSPBackend.Model;
-using Newtonsoft.Json;
 using Microsoft.CSharp.RuntimeBinder;
+using PSPBackend.Dto;
+using Newtonsoft.Json;
 
 
 [ApiController]
@@ -9,129 +10,234 @@ using Microsoft.CSharp.RuntimeBinder;
 public class OrderController : ControllerBase
 {
     private readonly OrderService _orderService;
+    private readonly ILogger<OrderController> _logger;
 
-    public OrderController(OrderService orderService)
+    public OrderController(OrderService orderService, ILogger<OrderController> logger)
     {
         _orderService = orderService;
+        _logger = logger;
     }
 
     [HttpGet]
     [Route("")]
-    public List<OrderModel> GetOrders(
-        [FromQuery] int? page_nr, [FromQuery] int? limit, [FromQuery] int? employee_id, 
-        [FromQuery] decimal? min_total_amount, [FromQuery] decimal? max_total_amount, 
-        [FromQuery] decimal? min_tip_amount, [FromQuery] decimal? max_tip_amount,
-        [FromQuery] decimal? min_tax_amount, [FromQuery] decimal? max_tax_amount,
-        [FromQuery] decimal? min_discount_amount, [FromQuery] decimal? max_discount_amount,
-        [FromQuery] decimal? min_order_discount_percentage, [FromQuery] decimal? max_order_discount_percentage,
-        [FromQuery] string? created_before, [FromQuery] string? created_after,
-        [FromQuery] string? closed_before, [FromQuery] string? closed_after,
-        [FromQuery] string? order_status
-        ) 
+    public IActionResult GetOrders([FromQuery] OrderGetDto orderGetDto)
     {
-        Console.WriteLine("LOG: Order controller GET request");
-        OrderArgumentModel arguments = new OrderArgumentModel(){
-            PageNr = page_nr,
-            Limit = limit,
-            EmployeeId = employee_id,
-            MinTotalAmount = min_total_amount,
-            MaxTotalAmount = max_total_amount,
-            MinTipAmount = min_tip_amount,
-            MaxTipAmount = max_tip_amount,
-            MinTaxAmount = min_tax_amount,
-            MaxTaxAmount = max_tax_amount,
-            MinDiscountAmount = min_discount_amount,
-            MaxDiscountAmount = max_discount_amount,
-            MinOrderDiscountPercentage = min_order_discount_percentage,
-            MaxOrderDiscountPercentage = max_order_discount_percentage,
-            CreatedBefore = created_before,
-            CreatedAfter = created_after,
-            ClosedBefore = closed_before,
-            ClosedAfter = closed_after,
-            OrderStatus = order_status
-        };
-        List<OrderModel> gottenOrders = _orderService.GetOrders(arguments);
-        string stringed = "LOG: Order controller returns orders: ";
-        foreach (OrderModel order in gottenOrders){
-            stringed += order.ToString();
+        try
+        {
+            List<OrderModel> gottenOrders = _orderService.GetOrders(orderGetDto);
+            _logger.LogInformation("OrderController successfully executed GetOrders");
+            return Ok(gottenOrders);
         }
-        Console.WriteLine(stringed);
-        return gottenOrders;
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in GetOrders (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpGet]
     [Route("{order_id}")]
-    public OrderModel? GetOrder(int order_id)
+    public IActionResult GetOrder(int order_id)
     {
-        Console.WriteLine("LOG: Order controller GET request");
-        OrderModel? gottenOrder = _orderService.GetOrder(order_id);
-        Console.WriteLine("LOG: Order controller returns order: " + gottenOrder);
-        return gottenOrder;
+        
+        try
+        {
+            OrderModel? gottenOrder = _orderService.GetOrder(order_id);
+            if(gottenOrder != null)
+            {
+                _logger.LogInformation("OrderController successfully executed GetOrder");
+                return Ok(gottenOrder);
+            }
+            else 
+            {
+                _logger.LogError("OrderController encountered a problem in GetOrder (returning status 404)");
+                return NotFound();
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in GetOrder (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPost]
-    public OrderModel? CreateOrder([FromBody] string body)
+    public IActionResult CreateOrder([FromBody] OrderModel order)
     {
-        //string json_string = new StreamReader(Request.Body).ReadToEnd();
-        Console.WriteLine("|||||||||||||||||creting order");
-        OrderModel? order = JsonConvert.DeserializeObject<OrderModel>(body);
-        if(order != null) return _orderService.CreateOrder(order);
-        return null;
+        
+        try
+        {
+            var result = _orderService.CreateOrder(order);
+            if(result != null)
+            {
+                _logger.LogInformation("OrderController successfully executed CreateOrder");
+                return StatusCode(StatusCodes.Status201Created, result);
+            }
+            _logger.LogError("OrderController encountered a problem in CreateOrder (returning status 400)"); 
+            return BadRequest();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in CreateOrder (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPost]
     [Route("{order_id}/status")]
-    public void UpdateOrderStatus(int order_id, [FromBody] string body)
+    public IActionResult UpdateOrderStatus(int order_id, [FromBody] OrderStatusDto status)
     {
-        //string bodyString = new StreamReader(Request.Body).ReadToEnd();
-        _orderService.UpdateOrderStatus(order_id, body);
+        try
+        {
+            var returnOrder = _orderService.UpdateOrderStatus(order_id, status.status);
+            if(returnOrder != null)
+            {
+                _logger.LogInformation("OrderController successfully executed UpdateOrderStatus");
+                return Ok(returnOrder);
+            } 
+            _logger.LogError("OrderController encountered a problem in UpdateOrderStatus (returning status 422)");
+            return UnprocessableEntity();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in UpdateOrderStatus (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    [HttpPost]
+    [Route("{order_id}/discountPercentage")]
+    public IActionResult UpdateOrderDiscount(int order_id, [FromBody] string body)
+    {
+        try
+        {
+            _orderService.UpdateOrderDiscount(order_id, body);
+            _logger.LogInformation("OrderController successfully executed UpdateOrderDiscount");
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in UpdateOrderDiscount (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpDelete]
     [Route("{order_id}")]
-    public void DeleteOrder(int order_id)
+    public IActionResult DeleteOrder(int order_id)
     {
-        _orderService.DeleteOrder(order_id);
+        
+        try
+        {
+            _orderService.DeleteOrder(order_id);
+            _logger.LogInformation("OrderController successfully executed DeleteOrder");
+            return NoContent();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in DeleteOrder (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPost]
     [Route("{order_id}/orderItem")]
-    public OrderItemModel? AddItemToOrder(int order_id, [FromBody] string body)
+    public IActionResult AddItemToOrder(int order_id, [FromBody] OrderItemCreateDto item)
     {
-        //string json_string = new StreamReader(Request.Body).ReadToEnd();
-        OrderItemModel? item = JsonConvert.DeserializeObject<OrderItemModel>(body);
-        if(item != null)
-            return _orderService.AddItem(order_id, item);
-        return null;
+        try
+        {
+            var result = _orderService.AddItem(order_id, item);
+            if(result != null)
+            {
+                _logger.LogInformation("OrderController successfully executed AddItemToOrder");
+                return StatusCode(StatusCodes.Status201Created, result);
+            } 
+            _logger.LogError("OrderController encountered a problem in AddItemToOrder (returning status 404)");
+            return BadRequest();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in AddItemToOrder (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpGet]
     [Route("{order_id}/orderItem")]
-    public IEnumerable<OrderItemModel> GetOrderItems(int order_id, [FromQuery] int? page_nr, [FromQuery] int? limit)
+    public IActionResult GetOrderItems(int order_id, [FromQuery] int? page_nr, [FromQuery] int? limit)
     {
-        return _orderService.GetItems(order_id, page_nr, limit);
+        try
+        {
+            var result = _orderService.GetItems(order_id, page_nr, limit);
+            _logger.LogInformation("OrderController successfully executed GetOrderItems");
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in GetOrderItems (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpGet]
     [Route("{order_id}/orderItem/{item_id}")]
-    public OrderItemModel? GetOrderItem(int order_id, int item_id)
+    public IActionResult GetOrderItem(int order_id, int item_id)
     {
-        return _orderService.GetItem(order_id, item_id);
+        try
+        {
+            var result = _orderService.GetItem(order_id, item_id);
+            if(result != null)
+            {
+                _logger.LogInformation("OrderController successfully executed GetOrderItem");
+                return Ok(result);
+            }
+            _logger.LogError("OrderController encountered a problem in GetOrderItem (returning status 404)");
+            return NotFound();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in GetOrderItem (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPatch]
     [Route("{order_id}/orderItem/{item_id}")]
-    public void UpdateOrderItem(int order_id, int item_id, [FromBody] string body)
+    public IActionResult UpdateOrderItem(int order_id, int item_id, [FromBody] OrderItemUpdateDto updateDto)
     {
-        //string bodyString = new StreamReader(Request.Body).ReadToEnd();
-        _orderService.UpdateItem(order_id, item_id, body);
+        try
+        {
+            var result = _orderService.UpdateItem(order_id, item_id, updateDto);
+            if(result != null)
+            {
+                _logger.LogInformation("OrderController successfully executed UpdateOrderItem");
+                return Ok(result);
+            }
+            _logger.LogError("OrderController encountered a problem in UpdateOrderItem (returning status 404)");
+            return NotFound();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in UpdateOrderItem (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpDelete]
     [Route("{order_id}/orderItem/{item_id}")]
-    public void DeleteOrderItem(int order_id, int item_id)
+    public IActionResult DeleteOrderItem(int order_id, int item_id)
     {
-        _orderService.DeleteItem(order_id, item_id);
+        try
+        {
+            _orderService.DeleteItem(order_id, item_id);
+            _logger.LogInformation("OrderController successfully executed DeleteOrderItem");
+            return NoContent();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in DeleteOrderItem (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
 }
