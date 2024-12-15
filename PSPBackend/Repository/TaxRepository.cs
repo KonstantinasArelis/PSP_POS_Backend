@@ -14,12 +14,10 @@ public class TaxRepository
         var query = _context.Tax.AsQueryable();
         if(isValid.HasValue)
             query = query.Where(d => d.is_valid == isValid);
-        Console.WriteLine("LOG: repository returns Taxes");
         return query; 
     }
     public int CreateTax(TaxModel tax)
     {
-        Console.WriteLine("CreateTax repository");
         _context.Tax.Add(tax);
         int rowsAffected = _context.SaveChanges(); 
 
@@ -27,12 +25,10 @@ public class TaxRepository
     }
     public TaxModel? GetTax(int taxId)
     {
-        Console.WriteLine("GetTax repository");
         return _context.Tax.FirstOrDefault(d => d.id == taxId);
     }
     public int UpdateTax(int taxId, TaxModel tax)
     {
-        Console.WriteLine("UpdateDiscount repository");
         TaxModel? oldTax = GetTax(taxId);
         if(oldTax != null) 
         {
