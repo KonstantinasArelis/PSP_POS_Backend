@@ -58,6 +58,7 @@ public class MenuService
 
     public int DeleteProduct(int productId)
     {
+        Console.WriteLine("LOG: Product Service: DeleteProduct");
         try
         {
             _menuRepository.DeleteProduct(productId);
@@ -67,6 +68,19 @@ public class MenuService
         {
             Console.WriteLine(ex.Message);
             return 0;
+        }
+    }
+    public ProductModel? UpdateProduct(int productId, ProductModel product)
+    {
+        Console.WriteLine("LOG: Product Service: UpdateProduct");
+
+        if (_menuRepository.UpdateProduct(productId, product) > 0)
+        {
+            return product;
+        }
+        else
+        {
+            return null;
         }
     }
 }

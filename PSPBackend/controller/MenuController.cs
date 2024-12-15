@@ -69,21 +69,24 @@ public class MenuController : ControllerBase
             return NotFound();
         }
 
+        Console.WriteLine("LOG: MenuController: GetProductById");
         return Ok(result);
     }
 
     [HttpGet]
     public IActionResult GetProducts([FromQuery] ProductGetDto dto)
     {
+        Console.WriteLine("LOG: MenuController: GetProducts");
         var products = _menuService.GetProducts(dto).ToList();
+
         return Ok(products);
     }
 
     [HttpDelete]
     [Route("{productId}")]
-    public IActionResult DeleteOrder(int productId)
+    public IActionResult DeleteProduct(int productId)
     {
-
+        Console.WriteLine("LOG: MenuController: DeleteProduct");
         try
         {
             _menuService.DeleteProduct(productId);
@@ -92,6 +95,28 @@ public class MenuController : ControllerBase
         catch (Exception)
         {
             return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    [HttpPatch]
+    [Route("{productId}")]
+    public IActionResult UpdateProduct(int productId, [FromBody] ProductModel updateProduct)
+    {
+        Console.WriteLine("LOG: MenuController: UpdateProduct");
+
+        if (!ModelState.IsValid)
+        {
+            Console.WriteLine("LOG: UpdateProduct: invalid model");
+            return BadRequest("Invalid data provided.");
+        }
+        try
+        {
+            var result = _menuService.UpdateProduct(productId, updateProduct);
+            return Ok(result);
+        }
+        catch (Exception ex) {
+            Console.WriteLine(ex.ToString());
+            return NotFound($"Product with Id {productId} not found.");
         }
     }
 }
