@@ -1,6 +1,7 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PSPBackend.Model;
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<UserModel>
 {
     public IConfiguration _config {get; set; }
     public AppDbContext(IConfiguration config)
