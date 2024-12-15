@@ -203,11 +203,10 @@ public class OrderController : ControllerBase
 
     [HttpPatch]
     [Route("{order_id}/orderItem/{item_id}")]
-    public IActionResult UpdateOrderItem(int order_id, int item_id, [FromBody] string body)
+    public IActionResult UpdateOrderItem(int order_id, int item_id, [FromBody] OrderItemUpdateDto updateDto)
     {
         try
         {
-            OrderItemUpdateDto? updateDto = JsonConvert.DeserializeObject<OrderItemUpdateDto>(body);
             var result = _orderService.UpdateItem(order_id, item_id, updateDto);
             if(result != null)
             {
