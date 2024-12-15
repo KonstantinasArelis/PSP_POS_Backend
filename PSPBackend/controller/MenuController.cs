@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PSPBackend.Dto;
 using PSPBackend.Model;
 using PSPBackend.Service;
 using System.ComponentModel.DataAnnotations;
@@ -69,5 +70,28 @@ public class MenuController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    [HttpGet]
+    public IActionResult GetProducts([FromQuery] ProductGetDto dto)
+    {
+        var products = _menuService.GetProducts(dto).ToList();
+        return Ok(products);
+    }
+
+    [HttpDelete]
+    [Route("{productId}")]
+    public IActionResult DeleteOrder(int productId)
+    {
+
+        try
+        {
+            _menuService.DeleteProduct(productId);
+            return NoContent();
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 }
