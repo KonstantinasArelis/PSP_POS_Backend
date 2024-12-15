@@ -10,14 +10,14 @@ public class DiscountService
         }
 
         public List<DiscountModel> GetDiscounts(
-            int page_nr, int limit, int? type, DateTime? valid_starting_from,
+            int page_nr, int limit, string? name, string? type, DateTime? valid_starting_from,
             DateTime? valid_atleast_until, string? code_hash
         )
         {
             
             Console.WriteLine("LOG: Discount service GetDiscounts");
             var query = _discountRepository.GetDiscounts(
-                type, valid_starting_from, valid_atleast_until, code_hash
+                name, type, valid_starting_from, valid_atleast_until, code_hash
             ); 
 
             var discounts = query.Skip(page_nr * limit).Take(limit).ToList();
@@ -41,7 +41,7 @@ public class DiscountService
             Console.WriteLine("DeleteDiscount service");
             
             if (_discountRepository.DeleteDiscount(discountId) > 0){
-                return 1; // 1 for success? Do I need to write it in another way??
+                return 1; 
             } else {
                 return null;
             }

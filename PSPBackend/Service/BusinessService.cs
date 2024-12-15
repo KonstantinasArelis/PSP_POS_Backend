@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using PSPBackend.Model;
 
 public class BusinessService {
@@ -18,12 +19,18 @@ public class BusinessService {
 
     public BusinessModel getBusinessById(int businessId)
     {
-        var result = _businessRepository.getBusinessById(businessId);
+        BusinessModel result;
+
+        try {
+            result = _businessRepository.getBusinessById(businessId);
+        } catch (KeyNotFoundException){
+            throw;
+        }
 
         return result;
     }
 
-    public int createBusiness(BusinessCreateDto newBusinessDto)
+    public BusinessModel createBusiness(BusinessCreateDto newBusinessDto)
     {
         BusinessModel newBusinessModel = new BusinessModel();
         newBusinessModel.id = _businessRepository.GetNewBusinessId();
@@ -51,19 +58,32 @@ public class BusinessService {
         }
 
 
-        var result = _businessRepository.createBusiness(newBusinessModel);
-        return 0;
-    }
+        BusinessModel result;
 
-    public int updateBusiness(int businessId, BusinessUpdateDto updatedBusinessDto)
-    {
-        var result = _businessRepository.updateBusiness(businessId, updatedBusinessDto);
+        try {
+            result = _businessRepository.createBusiness(newBusinessModel);
+        } catch (DbUpdateException){
+            throw;
+        }
+
         return result;
     }
 
-    public int deleteBusiness(int businessId)
+    public BusinessModel updateBusiness(int businessId, BusinessUpdateDto updatedBusinessDto)
     {
-        var result = _businessRepository.deleteBusiness(businessId);
-        return 0;
+        BusinessModel result;
+
+        try {
+            result = _businessRepository.updateBusiness(businessId, updatedBusinessDto);
+        } catch(DbUpdateException){
+            throw;
+        }
+
+        return result;
+    }
+
+    public void deleteBusiness(int businessId)
+    {
+        _businessRepository.deleteBusiness(businessId);
     }
 }

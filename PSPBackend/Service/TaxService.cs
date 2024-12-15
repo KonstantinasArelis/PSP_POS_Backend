@@ -14,7 +14,7 @@ public class TaxService
             Console.WriteLine("LOG: Tax service GetTaxes");
             var query = _taxRepository.GetTaxes(isValid); 
 
-            var taxes = query.Skip(page_nr * limit).Take(limit).ToList(); // Why like this???
+            var taxes = query.Skip(page_nr * limit).Take(limit).ToList(); 
             return taxes;
         }
 

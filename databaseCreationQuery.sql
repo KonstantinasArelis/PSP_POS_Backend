@@ -133,14 +133,14 @@ CREATE TABLE Reservation (
 );
 
 CREATE TABLE DiscountType (
-    id INT,
     discount_type_name VARCHAR(20),
-    PRIMARY KEY (id) 
+    PRIMARY KEY (discount_type_name) 
 )
 
-INSERT INTO DiscountType (discount_type_id, discount_type_name) VALUES
-    (1, 'ORDER'),
-    (2, 'ORDER_ITEM');
+INSERT INTO DiscountType (discount_type_name) VALUES
+    ('ORDER'),
+    ('ORDER_ITEM'),
+    ('PRODUCT');
 
 CREATE TABLE OrderStatus (
     order_status VARCHAR(20),
@@ -176,9 +176,10 @@ INSERT INTO PaymentStatus (payment_status_id, payment_status_name) VALUES
 
 CREATE TABLE Discount (
     id INT,
+    discount_name VARCHAR(255),
     business_id INT,
     product_id INT,
-    discount_type INT,
+    discount_type VARCHAR(20),
     amount DECIMAL(18,2),
     discount_percentage DECIMAL(5,2),
     valid_from DATETIME,
@@ -187,7 +188,17 @@ CREATE TABLE Discount (
     PRIMARY KEY (id),
     FOREIGN KEY (business_id) REFERENCES Business(id),
     FOREIGN KEY (product_id) REFERENCES Product(id),
-    FOREIGN KEY (discount_type) REFERENCES DiscountType(id),
+    FOREIGN KEY (discount_type) REFERENCES DiscountType(discount_type_name),
+)
+
+CREATE TABLE AppliedDiscount (
+    id INT,
+    order_item_id INT,
+    discount_type VARCHAR(20),
+    amount DECIMAL(18,2),
+    PRIMARY KEY (id),
+    FOREIGN KEY (order_item_id) REFERENCES OrderItem(id),
+    FOREIGN KEY (discount_type) REFERENCES DiscountType(discount_type_name),
 )
 
 CREATE TABLE _Order (

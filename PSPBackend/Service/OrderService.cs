@@ -76,6 +76,23 @@ public class OrderService
             _orderRepository.UpdateOrder(order);
         }
 
+        public void UpdateOrderDiscount(int orderId, string bodyString)
+        {
+            Console.WriteLine("LOG: Order service GetOrder");
+            OrderModel? order = _orderRepository.GetOrder(orderId);
+            if(order == null) return;
+            dynamic? obj = JsonConvert.DeserializeObject<dynamic>(bodyString);
+            if(obj != null)
+            {
+                try
+                {
+                    order.order_discount_percentage = obj.order_discount_percentage;
+                    _orderRepository.UpdateOrder(order); 
+                }
+                catch(RuntimeBinderException){}
+            }
+        }
+
         public void DeleteOrder(int orderId)
         {
             _orderRepository.DeleteOrder(orderId);
@@ -174,5 +191,17 @@ public class OrderService
                 _orderRepository.DeleteOrderItem(itemId);
                 RecalculateOrder(orderId);
             }
+        }
+
+        public OrderItemModel getOrderItemByReservationId(int reservationId)
+        {
+            OrderItemModel result = _orderRepository.getOrderItemByReservationId(reservationId);
+            return result;
+        }
+
+        public int closeOrder(int orderId)
+        {
+            int result =_orderRepository.closeOrder(orderId);
+            return result;
         }
 }
