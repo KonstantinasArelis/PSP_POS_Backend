@@ -67,8 +67,8 @@ public class PaymentService
         }
         
         PaymentModel newPaymentModel = new PaymentModel();
-        newPaymentModel.id = _paymentRepository.GetNewPaymentId(); 
-        newPaymentModel.business_id = null; // TO-DO add business authorization
+        newPaymentModel.id = _paymentRepository.GetNewPaymentId();
+        newPaymentModel.business_id = newPaymentDto.business_id;
         newPaymentModel.order_id = newPaymentDto.order_id;
         newPaymentModel.total_amount = newPaymentDto.total_amount;
         newPaymentModel.order_amount = null; // TO-DO what is order_amount

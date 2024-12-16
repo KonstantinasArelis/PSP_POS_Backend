@@ -19,4 +19,6 @@ public class PaymentGetDto {
     public DateTime? created_after { get; set; }
     
     public paymentStatusEnum? status { get; set; }
+
+    public int? business_id { get; set; }
 }
