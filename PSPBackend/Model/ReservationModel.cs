@@ -6,7 +6,7 @@ namespace PSPBackend.Model
     {
         public int id { get; set; }
         public int? business_id { get; set; }
-        public int? employee_id { get; set; }
+        public string? employee_id { get; set; }
         public string? client_name { get; set; }
         public string? client_phone { get; set; }
         public DateTime? created_at { get; set; }

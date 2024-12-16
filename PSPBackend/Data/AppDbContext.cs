@@ -1,6 +1,7 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PSPBackend.Model;
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<UserModel>
 {
     public IConfiguration _config {get; set; }
     public AppDbContext(IConfiguration config)
@@ -14,6 +15,7 @@ public class AppDbContext : DbContext
 
     public DbSet<OrderModel> Order {get; set; }
     public DbSet<ReservationModel> Reservation {get; set; }
+    public DbSet<UserModel> User {get; set; }
     public DbSet<DiscountModel> Discount {get; set; }
     public DbSet<TaxModel> Tax {get; set; }
     public DbSet<OrderItemModel> OrderItem {get; set; }

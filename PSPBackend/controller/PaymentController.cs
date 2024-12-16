@@ -9,10 +9,12 @@ using PSPBackend.Model;
 public class PaymentController : ControllerBase
 {
     private readonly PaymentService _paymentService;
+    private readonly ILogger<PaymentController> _logger;
 
-    public PaymentController(PaymentService paymentService)
+    public PaymentController(PaymentService paymentService, ILogger<PaymentController> logger)
     {
         _paymentService = paymentService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -20,10 +22,12 @@ public class PaymentController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
+            _logger.LogError("PaymentController encountered a problem in GetPayments (returning status 400)");
             return BadRequest(ModelState);
         }
 
         List<PaymentModel> gottenPayments = _paymentService.GetPayments(paymentGetDto);
+        _logger.LogInformation("PaymentController successfully executed GetPayments");
         return Ok(gottenPayments);
     }
 
@@ -32,6 +36,7 @@ public class PaymentController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
+            _logger.LogError("PaymentController encountered a problem in GetPaymentById (returning status 400)");
             return BadRequest(ModelState);
         }
 
@@ -40,9 +45,10 @@ public class PaymentController : ControllerBase
         try {
             result = _paymentService.GetPaymentById(id);
         } catch (KeyNotFoundException) {
+            _logger.LogError("PaymentController encountered a problem in GetPaymentById (returning status 404)");
             return NotFound();
         }
-
+        _logger.LogInformation("PaymentController successfully executed GetPaymentById");
         return Ok(result);
     }
 
@@ -51,6 +57,7 @@ public class PaymentController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
+            _logger.LogError("PaymentController encountered a problem in CreatePayment (returning status 400)");
             return BadRequest(ModelState);
         }
 
@@ -58,12 +65,14 @@ public class PaymentController : ControllerBase
         try 
         {
             result = _paymentService.CreatePayment(newPayment);
-        } catch (ValidationException ex) {
-            return BadRequest(new {error = ex.Message});
-        } catch(DbUpdateException) {
+        } catch (ValidationException e) {
+            _logger.LogError("PaymentController encountered a problem in CreatePayment (returning status 400) | " + e.Message);
+            return BadRequest(new {error = e.Message});
+        } catch(DbUpdateException e) {
+            _logger.LogError("PaymentController encountered a problem in CreatePayment (returning status 500) | " + e.Message);
             return StatusCode(500);
         }
-
+        _logger.LogInformation("PaymentController successfully executed CreatePayment");
         return Ok(result);
     }
 
@@ -72,6 +81,7 @@ public class PaymentController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
+            _logger.LogError("PaymentController encountered a problem in UpdatePayment (returning status 400)");
             return BadRequest(ModelState);
         }
 
@@ -80,13 +90,16 @@ public class PaymentController : ControllerBase
         try {
             updatedPayment = _paymentService.UpdatePayment(paymentId, updatedPaymentDto);
         } catch (ValidationException ex) {
+            _logger.LogError("PaymentController encountered a problem in UpdatePayment (returning status 400)");
             return BadRequest(new {error = ex.Message});
-        } catch(DbUpdateException) {
+        } catch(DbUpdateException e) {
+            _logger.LogError("PaymentController encountered a problem in UpdatePayment (returning status 500) | " + e.Message);
             return StatusCode(500);
-        } catch(KeyNotFoundException) {
+        } catch(KeyNotFoundException e) {
+            _logger.LogError("PaymentController encountered a problem in UpdatePayment (returning status 404) | " + e.Message);
             return NotFound();
         }
-
+        _logger.LogInformation("PaymentController successfully executed UpdatePayment");
         return Ok(updatedPayment);
     }
 }

@@ -24,9 +24,8 @@ public class OrderRepository
     {
         var query = _context.Order.AsQueryable();
 
-        
-        if (arguments.employee_id.HasValue)
-            query = query.Where(o => o.employee_id == arguments.employee_id.Value);
+        if (!string.IsNullOrEmpty(arguments.employee_id))
+            query = query.Where(o => o.employee_id == arguments.employee_id);
         if (arguments.min_total_amount.HasValue)
             query = query.Where(o => o.total_amount >= arguments.min_total_amount.Value);
         if (arguments.max_total_amount.HasValue)
@@ -44,6 +43,7 @@ public class OrderRepository
         if (arguments.max_order_discount_percentage.HasValue)
             query = query.Where(o => o.order_discount_percentage <= arguments.max_order_discount_percentage.Value);
         if (arguments.created_before!= null)
+
         {
             try
             {
@@ -81,7 +81,6 @@ public class OrderRepository
         }
         if (arguments.order_status != null)
             query = query.Where(o => o.order_status == arguments.order_status);
-        Console.WriteLine("LOG: repository returns orders");
         return query; 
     }
 
@@ -104,7 +103,6 @@ public class OrderRepository
             }
             _context.Remove(order);
             _context.SaveChanges();
-            Console.WriteLine("LOG: repository deletes an order");
             return;
         }
     }
@@ -113,7 +111,6 @@ public class OrderRepository
     {
         _context.Order.Entry(orderToUpdate).CurrentValues.SetValues(orderToUpdate);
         _context.SaveChanges();
-        Console.WriteLine("LOG: repository updates an order");
         return orderToUpdate;
     }
 
@@ -141,7 +138,6 @@ public class OrderRepository
         {
             _context.Remove(order);
             _context.SaveChanges();
-            Console.WriteLine("LOG: repository deletes an order item");
             return;
         }
     }
@@ -150,7 +146,6 @@ public class OrderRepository
     {
         _context.OrderItem.Entry(itemToUpdate).CurrentValues.SetValues(itemToUpdate);
         _context.SaveChanges();
-        Console.WriteLine("LOG: repository updates an order item");
         return itemToUpdate;
     }
 
