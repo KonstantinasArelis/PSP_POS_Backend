@@ -38,7 +38,6 @@ public class PaymentService
     {
         if(newPaymentDto.payment_method == paymentMethodEnum.GIFTCARD && newPaymentDto.gift_card_id == null)
         {
-            Console.WriteLine("Payment method was Gift Card, but gift card was not provided");
             throw new ValidationException("Payment method was Gift Card, but gift card was not provided");
         }
 
@@ -59,13 +58,11 @@ public class PaymentService
 
         if(orderTotal - alreadyPaid < newPaymentDto.total_amount)
         {
-            Console.WriteLine($"Payment total amount exceeds the amount left to be paid for this order");
             throw new ValidationException("Payment total amount exceeds the amount left to be paid for this order");
         }
 
         if(currentOrder.order_status == "CLOSED")
         {
-            Console.WriteLine("Cannot add a payment for a closed order");
             throw new ValidationException("Cannot add a payment for a closed order");
         }
         
@@ -88,7 +85,6 @@ public class PaymentService
 
             if(orderTotal == alreadyPaid+newPaymentDto.total_amount)
             {
-                Console.WriteLine("Closing order");
                 _orderService.closeOrder(newPaymentDto.order_id);
             }
         } catch (DbUpdateException ex) {
@@ -102,7 +98,6 @@ public class PaymentService
     {
         if(updatedPaymentDto.payment_method == paymentMethodEnum.GIFTCARD && updatedPaymentDto.gift_card_id == null)
         {
-            Console.WriteLine("Payment method was Gift Card, but gift card was not provided");
             throw new ValidationException("Payment method was Gift Card, but gift card was not provided");
         }
 
@@ -137,13 +132,11 @@ public class PaymentService
 
         if(alreadyPaidWithoutUpdatedPayment + updatedPaymentDto.total_amount > currentOrder.total_amount)
         {
-            Console.WriteLine("Updated payment makes the total payment of order exceed the total order amount");
             throw new ValidationException("Updated payment makes the total payment of order exceed the total order amount");
         }
 
         if(currentOrder.order_status == "CLOSED")
         {
-            Console.WriteLine("Cannot edit a payment for a closed order");
             throw new ValidationException("Cannot edit a payment for a closed order");
         }
 
@@ -171,10 +164,6 @@ public class PaymentService
 
         foreach(OrderItemModel item in itemsInOrder)
         {
-            if(item.product_price == null)
-            {
-                Console.WriteLine($"Warning: Product price is null for item with ID {item.id} in order {orderId}");
-            }
             totalAmount += item.product_price ?? 0m;
         }
 

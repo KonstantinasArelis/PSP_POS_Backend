@@ -5,6 +5,7 @@ using PSPBackend.Model;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
+using NLog.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,9 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
     });
 });
+
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 
 builder.Services.AddControllers();
 
@@ -132,8 +136,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-Console.WriteLine("BACKEND LOGAI ATSIRANDA CIA");
 
 app.UseHttpsRedirection();
 app.UseAuthentication(); // Add Authentication Middleware

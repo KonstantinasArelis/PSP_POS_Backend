@@ -60,7 +60,6 @@ public class ReservationService
             try {
                 _reservationRepository.CreateReservation(newReservation);
             } catch (DbUpdateException ex) {
-                Console.WriteLine("Failed to create a new reservation");
                 throw;
             }
             

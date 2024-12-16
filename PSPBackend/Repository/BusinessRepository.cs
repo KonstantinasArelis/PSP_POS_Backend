@@ -40,7 +40,6 @@ public class BusinessRepository
 
         if(result == null)
         {
-            Console.WriteLine("Business with id " + businessId + " was not found");
             throw new KeyNotFoundException("Business with id " + businessId + " was not found");
         }
         return result;
@@ -53,7 +52,6 @@ public class BusinessRepository
 
         if(rowsAffected == 0)
         {
-            Console.WriteLine("Failed to create business in database");
             throw new DbUpdateException("Failed to create business in database");
         }
 
@@ -94,7 +92,6 @@ public class BusinessRepository
 
         int rowsAffected = _context.SaveChanges();
         if(rowsAffected == 0){
-            Console.WriteLine("Failed to update business in database");
             throw new DbUpdateException("Failed to update business in database");
         }
 
