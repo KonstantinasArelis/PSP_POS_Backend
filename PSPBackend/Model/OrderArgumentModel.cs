@@ -3,7 +3,7 @@ public class OrderArgumentModel
 {
     public int? PageNr { get; set; }
     public int? Limit { get; set; }
-    public int? EmployeeId { get; set; }
+    public string? EmployeeId { get; set; }
     public decimal? MinTotalAmount { get; set; }
     public decimal? MaxTotalAmount { get; set; }
     public decimal? MinTipAmount { get; set; }

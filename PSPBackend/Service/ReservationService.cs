@@ -68,7 +68,7 @@ public class ReservationService
                 // create order for reservation
                 OrderModel newOrder = new OrderModel();
                 newOrder.id = 0; // set to 0 because then CreateOrder finds a new id
-                newOrder.employee_id = 1; // set to 1 since authorization is not implemented yet
+                newOrder.employee_id = "3AFF0D9B-5399-4D39-8B15-F3C158F8359F"; // set to 1 since authorization is not implemented yet
 
                 _orderService.CreateOrder(newOrder);
 

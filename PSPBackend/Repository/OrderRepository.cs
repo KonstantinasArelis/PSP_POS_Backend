@@ -24,8 +24,8 @@ public class OrderRepository
         var query = _context.Order.AsQueryable();
 
         
-        if (arguments.EmployeeId.HasValue)
-            query = query.Where(o => o.employee_id == arguments.EmployeeId.Value);
+        if (!string.IsNullOrEmpty(arguments.EmployeeId))
+            query = query.Where(o => o.employee_id == arguments.EmployeeId);
         if (arguments.MinTotalAmount.HasValue)
             query = query.Where(o => o.total_amount >= arguments.MinTotalAmount.Value);
         if (arguments.MaxTotalAmount.HasValue)

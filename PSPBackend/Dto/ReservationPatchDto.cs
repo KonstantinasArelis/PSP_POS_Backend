@@ -9,7 +9,7 @@ public class ReservationPatchDto // TO-DO API documentation says  created_at, la
 
         //user authorization is not implemented, so this cant be validated
         //[Range(1, int.MaxValue, ErrorMessage = "Employee Id must be a positive integer.")] 
-        public int? employee_id { get; set; }
+        public string? employee_id { get; set; }
 
         [ClientNameAttibute]
         public string? client_name { get; set; }

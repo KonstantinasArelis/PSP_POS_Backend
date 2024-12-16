@@ -18,7 +18,7 @@ public class OrderController : ControllerBase
     [HttpGet]
     [Route("")]
     public List<OrderModel> GetOrders(
-        [FromQuery] int? page_nr, [FromQuery] int? limit, [FromQuery] int? employee_id, 
+        [FromQuery] int? page_nr, [FromQuery] int? limit, [FromQuery] string? employee_id, 
         [FromQuery] decimal? min_total_amount, [FromQuery] decimal? max_total_amount, 
         [FromQuery] decimal? min_tip_amount, [FromQuery] decimal? max_tip_amount,
         [FromQuery] decimal? min_tax_amount, [FromQuery] decimal? max_tax_amount,
