@@ -3,7 +3,7 @@ public class OrderGetDto
 {
     public int? page_nr { get; set; }
     public int? limit { get; set; }
-    public int? employee_id { get; set; }
+    public string? employee_id { get; set; }
     public decimal? min_total_amount { get; set; }
     public decimal? max_total_amount { get; set; }
     public decimal? min_tax_amount { get; set; }
