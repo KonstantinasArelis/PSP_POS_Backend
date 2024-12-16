@@ -88,7 +88,6 @@ namespace PSPBackend.Controllers
                 new()
                 {
                     Username = userFromDb.UserName,
-                    Id = userFromDb.Id,
                     AuthToken = token,
                     Role = role,
                     BusinessId = userFromDb.BusinessId
