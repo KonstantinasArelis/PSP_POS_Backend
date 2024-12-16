@@ -17,39 +17,6 @@ public class MenuController : ControllerBase
         _menuService = menuService;
     }
 
-    [HttpPost]
-    public IActionResult CreateProduct([FromBody] ProductModel product)
-    {
-        if (!ModelState.IsValid)
-        {
-            Console.WriteLine("LOG: CreateProduct invalid model");
-            return BadRequest();
-        }
-        else
-        {
-            Console.WriteLine("LOG: MenuController: CreateProduct");
-
-            ProductModel? result;
-            try
-            {
-                result = _menuService.CreateProduct(product);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (DbUpdateException ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return StatusCode(500);
-            }
-
-            return Ok(result);
-        }
-
-
-    }
-
     [HttpGet("{id}")]
     public IActionResult GetProductById(int id)
     {
@@ -72,6 +39,39 @@ public class MenuController : ControllerBase
         Console.WriteLine("LOG: MenuController: GetProductById");
         return Ok(result);
     }
+
+    [HttpPost]
+    public IActionResult CreateProduct([FromBody] ProductModel product)
+    {
+        Console.WriteLine("LOG: MenuController: CreateProduct");
+        if (!ModelState.IsValid)
+        {
+            Console.WriteLine("LOG: CreateProduct invalid model");
+            return BadRequest();
+        }
+        else
+        {
+            ProductModel? result;
+            try
+            {
+                result = _menuService.CreateProduct(product);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return StatusCode(500);
+            }
+
+            return Ok(result);
+        }
+
+
+    }
+
 
     [HttpGet]
     public IActionResult GetProducts([FromQuery] ProductGetDto dto)
