@@ -18,6 +18,10 @@ namespace PSPBackend.Model
 
         //menu managment is not implemented, so this cant be validated
         //[Range(1, int.MaxValue, ErrorMessage = "Service Id must be a positive integer.")] 
-        public int? service_id { get; set; }
+        public string? service_id { get; set; }
+
+        public string? employee_id { get; set; }
+
+        public int? business_id { get; set; }
     }
 }

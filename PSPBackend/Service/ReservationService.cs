@@ -50,9 +50,8 @@ public class ReservationService
             newReservation.last_modified = DateTime.Now;
             newReservation.ReservationStatus = reservationStatusEnum.RESERVED;
 
-            // TO-DO change once authorization is implemented
-            newReservation.business_id=null;
-            newReservation.employee_id=null;
+            newReservation.business_id= reservationDto.business_id;
+            newReservation.employee_id = reservationDto.employee_id;
 
             // TO-DO change once menu managemet is implemented
             newReservation.service_id=null;

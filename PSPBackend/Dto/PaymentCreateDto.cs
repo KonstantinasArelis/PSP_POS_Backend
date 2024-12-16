@@ -20,4 +20,6 @@ public class PaymentCreateDto {
 
     [Range(1, int.MaxValue, ErrorMessage = "Gift card Id must be a positive integer or null")] 
     public int? gift_card_id { get; set; }
+
+    public int? business_id { get; set; }
 }
