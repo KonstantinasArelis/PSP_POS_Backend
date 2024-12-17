@@ -17,7 +17,6 @@ namespace PSPBackend.Controllers
         private readonly AppDbContext _context;
         private readonly UserManager<UserModel> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private ApiResponse _apiResponse;
         private readonly ILogger<OrderController> _logger;
         private string _secretKey;
 
@@ -32,7 +31,6 @@ namespace PSPBackend.Controllers
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
-            _apiResponse = new ApiResponse();
             _logger = logger;
             _secretKey = configuration.GetValue<string>("JwtSettings:Secret");
         }
@@ -40,8 +38,6 @@ namespace PSPBackend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginRequestDTO)
         {
-            _apiResponse = new ApiResponse();
-
             if (!ModelState.IsValid)
             {
                 _logger.LogError("AuthController encountered invalid model during login (returning status 400)");
@@ -55,11 +51,8 @@ namespace PSPBackend.Controllers
                     || !await _userManager.CheckPasswordAsync(userFromDb, loginRequestDTO.Password)
                 )
                 {
-                    _apiResponse.StatusCode = HttpStatusCode.Unauthorized;
-                    _apiResponse.IsSuccess = false;
-                    _apiResponse.ErrorMessages.Add("Invalid username or password");
                     _logger.LogWarning("AuthController login failed for username: {Username}. Invalid credentials.", loginRequestDTO.Username);
-                    return Unauthorized(_apiResponse);
+                    return Unauthorized(new { message = "Invalid username or password" });
                 }
 
                 var roles = await _userManager.GetRolesAsync(userFromDb);
@@ -68,10 +61,7 @@ namespace PSPBackend.Controllers
                 if (role == null)
                 {
                     _logger.LogError("AuthController. User {Username} has no assigned roles.", userFromDb.UserName);
-                    _apiResponse.StatusCode = HttpStatusCode.Unauthorized;
-                    _apiResponse.IsSuccess = false;
-                    _apiResponse.ErrorMessages.Add("User has no assigned roles.");
-                    return Unauthorized(_apiResponse);
+                    return Unauthorized(new { message = "User has no assigned roles." });
                 }
 
                 var claims = new List<Claim>
@@ -108,20 +98,14 @@ namespace PSPBackend.Controllers
 
                 _logger.LogInformation("AuthController. Token generated for user {Username} with role {Role}.", userFromDb.UserName, role);
 
-                _apiResponse.StatusCode = HttpStatusCode.OK;
-                _apiResponse.Data = loginResponse;
-
                 _logger.LogInformation("AuthController. User {Username} logged in successfully.", userFromDb.UserName);
 
-                return Ok(_apiResponse);
+                return Ok(loginResponse);
             }
             catch (Exception ex)
             {
-                _logger.LogError("AuthController encountered an error that occurred during login for " + loginRequestDTO.Username + ". | " + ex.Message);
-                _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
-                _apiResponse.IsSuccess = false;
-                _apiResponse.ErrorMessages.Add("Internal server error.");
-                return StatusCode((int)HttpStatusCode.InternalServerError, _apiResponse);
+                _logger.LogError("AuthController encountered an error during login for {Username}: {Error}", loginRequestDTO.Username, ex.Message);
+                return StatusCode((int)HttpStatusCode.InternalServerError, new { message = "Internal server error." });
             }
         }
     }
