@@ -96,6 +96,23 @@ public class OrderService
             }
         }
 
+        public void UpdateOrderItemDiscount(int item_id, string bodyString)
+        {
+            Console.WriteLine("LOG: Order service GetOrder");
+            OrderItemModel? item = _orderRepository.GetOrderItem(item_id);
+            if(item == null) return;
+            dynamic? obj = JsonConvert.DeserializeObject<dynamic>(bodyString);
+            if(obj != null)
+            {
+                try
+                {
+                    item.item_discount_amount = obj.item_discount_amount;
+                    _orderRepository.UpdateOrderItem(item); 
+                }
+                catch(RuntimeBinderException){}
+            }
+        }
+
         public void DeleteOrder(int orderId)
         {
             _orderRepository.DeleteOrder(orderId);

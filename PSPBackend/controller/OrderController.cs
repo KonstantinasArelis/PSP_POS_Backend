@@ -223,6 +223,23 @@ public class OrderController : ControllerBase
         }
     }
 
+    [HttpPost]
+    [Route("{order_id}/orderItem/{item_id}/discountPercentage")]
+    public IActionResult UpdateOrderItemDiscount(int item_id, [FromBody] string body)
+    {
+        try
+        {
+            _orderService.UpdateOrderItemDiscount(item_id, body);
+            _logger.LogInformation("OrderController successfully executed UpdateOrderItemDiscount");
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("OrderController encountered a problem in UpdateOrderItemDiscount (returning status 500) | " + e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
     [HttpDelete]
     [Route("{order_id}/orderItem/{item_id}")]
     public IActionResult DeleteOrderItem(int order_id, int item_id)
