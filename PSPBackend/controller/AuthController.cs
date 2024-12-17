@@ -4,9 +4,10 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using PSPBackend.DTO;
+using PSPBackend.Dto;
 using PSPBackend.Model;
 using System.Net;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PSPBackend.Controllers
 {
@@ -17,7 +18,6 @@ namespace PSPBackend.Controllers
         private readonly AppDbContext _context;
         private readonly UserManager<UserModel> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private ApiResponse _apiResponse;
         private readonly ILogger<OrderController> _logger;
         private string _secretKey;
 
@@ -32,16 +32,13 @@ namespace PSPBackend.Controllers
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
-            _apiResponse = new ApiResponse();
             _logger = logger;
             _secretKey = configuration.GetValue<string>("JwtSettings:Secret");
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginRequestDTO)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
         {
-            _apiResponse = new ApiResponse();
-
             if (!ModelState.IsValid)
             {
                 _logger.LogError("AuthController encountered invalid model during login (returning status 400)");
@@ -49,17 +46,14 @@ namespace PSPBackend.Controllers
             }
             try
             {
-                UserModel userFromDb = await _userManager.FindByNameAsync(loginRequestDTO.Username);
+                UserModel userFromDb = await _userManager.FindByNameAsync(loginRequestDto.Username);
                 if (
                     userFromDb == null
-                    || !await _userManager.CheckPasswordAsync(userFromDb, loginRequestDTO.Password)
+                    || !await _userManager.CheckPasswordAsync(userFromDb, loginRequestDto.Password)
                 )
                 {
-                    _apiResponse.StatusCode = HttpStatusCode.Unauthorized;
-                    _apiResponse.IsSuccess = false;
-                    _apiResponse.ErrorMessages.Add("Invalid username or password");
-                    _logger.LogWarning("AuthController login failed for username: {Username}. Invalid credentials.", loginRequestDTO.Username);
-                    return Unauthorized(_apiResponse);
+                    _logger.LogWarning("AuthController login failed for username: {Username}. Invalid credentials.", loginRequestDto.Username);
+                    return Unauthorized(new { message = "Invalid username or password" });
                 }
 
                 var roles = await _userManager.GetRolesAsync(userFromDb);
@@ -68,10 +62,7 @@ namespace PSPBackend.Controllers
                 if (role == null)
                 {
                     _logger.LogError("AuthController. User {Username} has no assigned roles.", userFromDb.UserName);
-                    _apiResponse.StatusCode = HttpStatusCode.Unauthorized;
-                    _apiResponse.IsSuccess = false;
-                    _apiResponse.ErrorMessages.Add("User has no assigned roles.");
-                    return Unauthorized(_apiResponse);
+                    return Unauthorized(new { message = "User has no assigned roles." });
                 }
 
                 var claims = new List<Claim>
@@ -97,7 +88,7 @@ namespace PSPBackend.Controllers
                 SecurityToken securityToken = tokenHandler.CreateToken(securityTokenDescriptor);
                 string token = tokenHandler.WriteToken(securityToken);
 
-                LoginResponseDTO loginResponse =
+                LoginResponseDto loginResponse =
                     new()
                     {
                         Username = userFromDb.UserName,
@@ -108,21 +99,101 @@ namespace PSPBackend.Controllers
 
                 _logger.LogInformation("AuthController. Token generated for user {Username} with role {Role}.", userFromDb.UserName, role);
 
-                _apiResponse.StatusCode = HttpStatusCode.OK;
-                _apiResponse.Data = loginResponse;
-
                 _logger.LogInformation("AuthController. User {Username} logged in successfully.", userFromDb.UserName);
 
-                return Ok(_apiResponse);
+                return Ok(loginResponse);
             }
             catch (Exception ex)
             {
-                _logger.LogError("AuthController encountered an error that occurred during login for " + loginRequestDTO.Username + ". | " + ex.Message);
-                _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
-                _apiResponse.IsSuccess = false;
-                _apiResponse.ErrorMessages.Add("Internal server error.");
-                return StatusCode((int)HttpStatusCode.InternalServerError, _apiResponse);
+                _logger.LogError("AuthController encountered an error during login for {Username}: {Error}", loginRequestDto.Username, ex.Message);
+                return StatusCode((int)HttpStatusCode.InternalServerError, new { message = "Internal server error." });
             }
+        }
+
+        [Authorize(Roles = "SUPER_ADMIN, OWNER")]
+        [HttpPost("register/user")]
+        public async Task<IActionResult> RegisterUser([FromBody] RegisterUserDto registerUserDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogError("AuthController encountered invalid model during user registration (returning status 400)");
+                return BadRequest(ModelState);
+            }
+
+            UserModel currentUser = await _userManager.GetUserAsync(User);
+
+            if (currentUser == null)
+            {
+                _logger.LogWarning("AuthController could not find user.");
+                return Unauthorized(new { message = "User not found." });
+            }
+
+            var roles = await _userManager.GetRolesAsync(currentUser);
+
+            if (roles == null || !roles.Any())
+            {
+                _logger.LogError("AuthController. User {Username} has no assigned roles.", currentUser.UserName);
+                return Unauthorized(new { message = "User has no assigned roles." });
+            }
+
+            string currentUserRole = roles.First();
+
+            if (currentUserRole != UserRole.SUPER_ADMIN.ToString() && currentUserRole != UserRole.OWNER.ToString())
+            {
+                _logger.LogWarning("AuthController. User {Username} does not have permission to register a user.", currentUser.UserName);
+                return Forbid();
+            }
+
+            UserModel employeeUserFromDb = _context.User.FirstOrDefault(
+                u => u.NormalizedUserName == registerUserDto.Username.ToUpper()
+            );
+
+            if (employeeUserFromDb != null)
+            {
+                _logger.LogError("AuthController encountered user being registered already exists (returning status 400)");
+                return BadRequest(new { message = "User being registered already exists."});
+            }
+
+            var business = await _context.Business.FindAsync(registerUserDto.BusinessId);
+            if (business == null)
+            {
+                _logger.LogError("AuthController. Business ID {BusinessId} not found.", registerUserDto.BusinessId);
+                return BadRequest(new { message = "Invalid Business ID." });
+            }
+
+            UserModel newUser = new UserModel
+            {
+                UserName = registerUserDto.Username,
+                FullName = registerUserDto.FullName,
+                AccountStatus = 1,
+                BusinessId = registerUserDto.BusinessId,
+                TipsAmount = 0m,
+            };
+
+            try
+            {
+                var result = await _userManager.CreateAsync(newUser, registerUserDto.Password);
+                if (result.Succeeded)
+                {
+                    if (!await _roleManager.RoleExistsAsync(registerUserDto.UserRole))
+                    {
+                        await _roleManager.CreateAsync(new IdentityRole(UserRole.SUPER_ADMIN.ToString()));
+                        await _roleManager.CreateAsync(new IdentityRole(UserRole.OWNER.ToString()));
+                        await _roleManager.CreateAsync(new IdentityRole(UserRole.EMPLOYEE.ToString()));
+                    }
+
+                    await _userManager.AddToRoleAsync(newUser, registerUserDto.UserRole);
+                    _logger.LogInformation("AuthController successfully registered a new user.");
+                    return Ok();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            _logger.LogError("AuthController encountered an error during new user registration.");
+            return BadRequest(new { message = "AuthController encountered and error  during new user registration."});
         }
     }
 }
