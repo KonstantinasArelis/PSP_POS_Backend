@@ -36,7 +36,7 @@ public class TaxController : ControllerBase
                 return Ok(createdTax);
             } else {
                 _logger.LogError("TaxController encountered a problem in CreateTax (returning status 501)");
-                return StatusCode(501); // http code to be changed(?)
+                return StatusCode(501); 
             }
         } 
     }
@@ -53,7 +53,7 @@ public class TaxController : ControllerBase
         else
         {
             _logger.LogError("TaxController encountered a problem in GetTaxById (returning status 500)");
-            return StatusCode(500, "An error occured while getting a tax"); // to be changed
+            return StatusCode(500, "An error occured while getting a tax");
         }
     }
 
@@ -74,6 +74,5 @@ public class TaxController : ControllerBase
         }
         _logger.LogInformation("TaxController successfully executed UpdateTax");
         return Ok(result);
-
     }
 }

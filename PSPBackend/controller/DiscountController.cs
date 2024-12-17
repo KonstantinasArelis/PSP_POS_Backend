@@ -42,7 +42,7 @@ public class DiscountController : ControllerBase
         else
         {
             _logger.LogError("DiscountController encountered a problem in GetDiscountById (returning status 500)");
-            return StatusCode(500, "An error occured while getting discount"); // to be changed
+            return StatusCode(500, "An error occured while getting discount");
         }
     }
 
@@ -54,12 +54,12 @@ public class DiscountController : ControllerBase
             return Ok();
         } else {
             _logger.LogError("DiscountController encountered a problem in DeleteDiscount (returning status 501)");
-            return StatusCode(501); // http code to be changed
+            return StatusCode(501); 
         }
     }
 
     [HttpPatch("{discountId}")]
-    public IActionResult UpdateDiscount(int discountId, [FromBody] DiscountModel updatedDiscount) // case when foreign keys are not apprpriate should be considered
+    public IActionResult UpdateDiscount(int discountId, [FromBody] DiscountModel updatedDiscount)
     {        
         if (!ModelState.IsValid)
         {
@@ -79,7 +79,7 @@ public class DiscountController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CreateDiscount([FromBody] DiscountModel discount) // case when foreign keys are not apprpriate should be considered
+    public IActionResult CreateDiscount([FromBody] DiscountModel discount) 
     {    
         if(!ModelState.IsValid) 
         {
@@ -92,7 +92,7 @@ public class DiscountController : ControllerBase
                 return Ok(createdDiscount);
             } else {
                 _logger.LogError("DiscountController encountered a problem in CreateDiscount (returning status 501)");
-                return StatusCode(501); // http code to be changed(?)
+                return StatusCode(501); 
             }
         }
         
