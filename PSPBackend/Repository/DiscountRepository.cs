@@ -22,10 +22,10 @@ public class DiscountRepository
             query = query.Where(d => d.discount_type == type);
 
         if (valid_starting_from.HasValue)
-            query = query.Where(d => d.valid_from >= valid_starting_from.Value); // should it be like this??
+            query = query.Where(d => d.valid_from >= valid_starting_from.Value); 
         
         if (valid_atleast_until.HasValue)
-            query = query.Where(d => d.valid_until >= valid_atleast_until.Value); // should it be like this??
+            query = query.Where(d => d.valid_until >= valid_atleast_until.Value);
 
         if (!string.IsNullOrEmpty(code_hash))
             query = query.Where(d => d.code_hash == code_hash);
