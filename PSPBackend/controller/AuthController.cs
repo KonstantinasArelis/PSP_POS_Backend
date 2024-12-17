@@ -144,8 +144,6 @@ namespace PSPBackend.Controllers
                 return Forbid();
             }
 
-
-            // Check if user with the email already exists
             UserModel employeeUserFromDb = _context.User.FirstOrDefault(
                 u => u.NormalizedUserName == registerUserDto.Username.ToUpper()
             );
@@ -154,6 +152,13 @@ namespace PSPBackend.Controllers
             {
                 _logger.LogError("AuthController encountered user being registered already exists (returning status 400)");
                 return BadRequest(new { message = "User being registered already exists."});
+            }
+
+            var business = await _context.Business.FindAsync(registerUserDto.BusinessId);
+            if (business == null)
+            {
+                _logger.LogError("AuthController. Business ID {BusinessId} not found.", registerUserDto.BusinessId);
+                return BadRequest(new { message = "Invalid Business ID." });
             }
 
             UserModel newUser = new UserModel
