@@ -2,14 +2,17 @@ using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using PSPBackend.Model;
 using PSPBackend.Dto;
+using PSPBackend.Service;
 public class OrderService
 {
         private readonly OrderRepository _orderRepository;
         private readonly TaxService _taxService;
-        public OrderService(OrderRepository orderRepository, TaxService taxService)
+        private readonly MenuService _menuService;
+        public OrderService(OrderRepository orderRepository, TaxService taxService, MenuService menuService)
         {
             _orderRepository = orderRepository;
             _taxService = taxService;
+            _menuService = menuService;
         }
 
         public OrderModel? CreateOrder(OrderModel order)
@@ -132,9 +135,19 @@ public class OrderService
             if(order != null)
             {
                 int newId = _orderRepository.GetNewOrderItemId();
-                string? newProductName = null; //TODO: figure out the product name when menu stuff is done
-                decimal? newProductPrice = null; //TODO: figure out the product price when menu stuff is done
-                int? newTaxId = null; //TODO: figure out the item's taxes when tax stuff is done
+                string? newProductName = null;
+                decimal? newProductPrice = null;
+                int? newTaxId = null;
+                if(itemDto.product_id != null)
+                {
+                    var product = _menuService.GetProduct((int) itemDto.product_id);
+                    if(product != null)
+                    {
+                        newProductName = product.ProductName;
+                        newProductPrice = product.Price;
+                        newTaxId = product.TaxId;
+                    }
+                }
                 decimal newVariationPrice = 0;
                 foreach(var variation in itemDto.variations){
                     newVariationPrice += variation.price;
