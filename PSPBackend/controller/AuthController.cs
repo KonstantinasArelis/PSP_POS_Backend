@@ -92,9 +92,7 @@ namespace PSPBackend.Controllers
                     new()
                     {
                         Username = userFromDb.UserName,
-                        AuthToken = token,
-                        Role = role,
-                        BusinessId = userFromDb.BusinessId
+                        AuthToken = token
                     };
 
                 _logger.LogInformation("AuthController. Token generated for user {Username} with role {Role}.", userFromDb.UserName, role);
