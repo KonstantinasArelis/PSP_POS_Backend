@@ -3,6 +3,7 @@ using PSPBackend.Model;
 using System.Text.RegularExpressions;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using PSPBackend.Dto;
 
 public class ReservationService
 {
@@ -54,7 +55,7 @@ public class ReservationService
             newReservation.employee_id = reservationDto.employee_id;
 
             // TO-DO change once menu managemet is implemented
-            newReservation.service_id=null;
+            newReservation.service_id=reservationDto.service_id;
             
             try {
                 _reservationRepository.CreateReservation(newReservation);
@@ -67,7 +68,7 @@ public class ReservationService
                 OrderModel newOrder = new OrderModel();
                 newOrder.id = 0; // set to 0 because then CreateOrder finds a new id
                 newOrder.employee_id = "3AFF0D9B-5399-4D39-8B15-F3C158F8359F"; // set to 1 since authorization is not implemented yet
-
+                newOrder.order_status = "OPEN";
                 _orderService.CreateOrder(newOrder);
 
                 // create order item for reservation (reservations are tied to order items)
@@ -75,10 +76,15 @@ public class ReservationService
                 newOrderItem.id = 0; // set to 0 because then AddItem finds a new id
                 newOrderItem.quantity = 1;
 
-                newOrderItem.reservation_id = newReservation.id;
+
+                OrderItemCreateDto itemDto = new OrderItemCreateDto();
+                itemDto.order_id = 0;
+                itemDto.quantity = 1;
+                itemDto.product_id = reservationDto.service_id;
+                itemDto.reservation_id = newReservation.id;
 
                 // product_id, product_name, product_price, tax_id, item_discount_amount not set as they are not implemented yet
-                _orderService.AddItem(newOrder.id, newOrderItem);
+                _orderService.AddItem(newOrder.id, itemDto);
             } catch (DbUpdateException ex) {
                 throw;
             }
