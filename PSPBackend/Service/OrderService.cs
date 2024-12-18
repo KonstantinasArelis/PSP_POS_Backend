@@ -8,11 +8,13 @@ public class OrderService
         private readonly OrderRepository _orderRepository;
         private readonly TaxService _taxService;
         private readonly MenuService _menuService;
-        public OrderService(OrderRepository orderRepository, TaxService taxService, MenuService menuService)
+        private readonly ReservationRepository _reservationRepository;
+        public OrderService(OrderRepository orderRepository, TaxService taxService, MenuService menuService, ReservationRepository reservationRepository)
         {
             _orderRepository = orderRepository;
             _taxService = taxService;
             _menuService = menuService;
+            _reservationRepository = reservationRepository;
         }
 
         public OrderModel? CreateOrder(OrderModel order)
@@ -149,15 +151,18 @@ public class OrderService
                     }
                 }
                 decimal newVariationPrice = 0;
-                foreach(var variation in itemDto.variations){
+                if(itemDto.variations != null){
+                    foreach(var variation in itemDto.variations){
                     newVariationPrice += variation.price;
                 }
+                }
+                
                 decimal? newItemDiscountAmount = null; //TODO: figure out the item's discount when discount stuff is done
                 OrderItemModel newItem = new OrderItemModel(){
                     id=newId, 
                     order_id=orderId,
                     product_id=itemDto.product_id,
-                    reservation_id = null,
+                    reservation_id = itemDto.reservation_id,
                     quantity = itemDto.quantity,
                     variations = JsonConvert.SerializeObject(itemDto.variations),
                     product_name = newProductName,
@@ -214,6 +219,25 @@ public class OrderService
 
         public int closeOrder(int orderId)
         {
+            var order = _orderRepository.GetOrder(orderId);
+            foreach( OrderItemModel item in order.items){
+                if(item.reservation_id != null){
+                    ReservationModel currentReservation = _reservationRepository.GetReservationById(item.reservation_id ?? 0);
+                    ReservationPatchDto closedReservation = new ReservationPatchDto();
+                    closedReservation.business_id = currentReservation.business_id;
+                    closedReservation.employee_id = currentReservation.employee_id;
+                    closedReservation.client_name = currentReservation.client_name;
+                    closedReservation.client_phone = currentReservation.client_phone;
+                    closedReservation.appointment_time = currentReservation.appointment_time;
+                    closedReservation.duration = currentReservation.duration;
+                    closedReservation.ReservationStatus = reservationStatusEnum.CANCELLED;
+                    closedReservation.service_id = currentReservation.service_id;
+
+                    _reservationRepository.UpdateReservation(item.reservation_id ?? 0, closedReservation);
+                }
+                
+            }
+
             int result =_orderRepository.closeOrder(orderId);
             return result;
         }

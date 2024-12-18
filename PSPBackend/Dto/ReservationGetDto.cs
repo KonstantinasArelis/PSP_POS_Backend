@@ -44,5 +44,5 @@ public class ReservationGetDto
 
     //menu managment is not implemented, so this cant be validated
     //[Range(1, int.MaxValue, ErrorMessage = "Service Id must be a positive integer.")] 
-    public string? service_id { get; set; }
+    public int? service_id { get; set; }
 }

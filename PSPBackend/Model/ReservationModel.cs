@@ -16,6 +16,6 @@ namespace PSPBackend.Model
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public reservationStatusEnum? ReservationStatus { get; set; }
-        public string? service_id { get; set; }
+        public int? service_id { get; set; }
     }
 }
