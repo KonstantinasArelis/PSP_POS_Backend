@@ -56,7 +56,6 @@ public class OrderService
             if(order == null) return;
             decimal newTotalAmount = 0;
             decimal newTaxAmount = 0;
-            decimal newOrderDiscountPercentage = 0;
             decimal newTotalDiscountAmount = 0;
             foreach(OrderItemModel item in order.items){
                 decimal itemTax = 0;
@@ -68,22 +67,27 @@ public class OrderService
                 }
                 if(item.quantity != null && item.quantity != 0){
                     decimal quantity = (decimal) item.quantity;
-                    newTotalAmount += quantity * (item.product_price ?? 0 + item.variation_price ?? 0 + itemTax - item.item_discount_amount ?? 0);
-                    newTaxAmount += quantity * itemTax;
-                    newTotalDiscountAmount += quantity * item.item_discount_amount ?? 0;
+                    var ItemBeforeDiscountAmount = quantity * ((item.product_price ?? 0m) + (item.variation_price ?? 0m));
+                    var ItemDiscountAmount = ItemBeforeDiscountAmount * ((item.item_discount_amount ?? 0m) / 100);
+                    var ItemAfterDiscountBeforeTaxAmount = ItemBeforeDiscountAmount - ItemDiscountAmount;
+                    var ItemTaxAmount = ItemAfterDiscountBeforeTaxAmount * (itemTax / 100);
+                    var ItemAfterTaxAmount = ItemAfterDiscountBeforeTaxAmount + ItemTaxAmount;
+                    newTotalDiscountAmount += ItemDiscountAmount;
+                    newTaxAmount += ItemTaxAmount;
+                    newTotalAmount += ItemAfterTaxAmount;
                 }
             }
-            //newOrderDiscountPercentage calculations go here probably
+            decimal OrderDiscountAmount = newTotalAmount * ((order.order_discount_percentage ?? 0m) / 100);
+            newTotalDiscountAmount += OrderDiscountAmount;
+            newTotalAmount -= OrderDiscountAmount;
             order.total_amount = newTotalAmount;
             order.tax_amount = newTaxAmount;
             order.total_discount_amount = newTotalDiscountAmount;
-            //order.order_discount_percentage = newOrderDiscountPercentage;
             _orderRepository.UpdateOrder(order);
         }
 
         public void UpdateOrderDiscount(int orderId, string bodyString)
         {
-            Console.WriteLine("LOG: Order service GetOrder");
             OrderModel? order = _orderRepository.GetOrder(orderId);
             if(order == null) return;
             dynamic? obj = JsonConvert.DeserializeObject<dynamic>(bodyString);
@@ -93,6 +97,7 @@ public class OrderService
                 {
                     order.order_discount_percentage = obj.order_discount_percentage;
                     _orderRepository.UpdateOrder(order); 
+                    RecalculateOrder(orderId);
                 }
                 catch(RuntimeBinderException){}
             }
@@ -100,7 +105,6 @@ public class OrderService
 
         public void UpdateOrderItemDiscount(int item_id, string bodyString)
         {
-            Console.WriteLine("LOG: Order service GetOrder");
             OrderItemModel? item = _orderRepository.GetOrderItem(item_id);
             if(item == null) return;
             dynamic? obj = JsonConvert.DeserializeObject<dynamic>(bodyString);
@@ -110,6 +114,7 @@ public class OrderService
                 {
                     item.item_discount_amount = obj.item_discount_amount;
                     _orderRepository.UpdateOrderItem(item); 
+                    RecalculateOrder(item.order_id);
                 }
                 catch(RuntimeBinderException){}
             }
@@ -173,8 +178,6 @@ public class OrderService
                     newVariationPrice += variation.price;
                 }
                 }
-                
-                decimal? newItemDiscountAmount = null; //TODO: figure out the item's discount when discount stuff is done
                 OrderItemModel newItem = new OrderItemModel(){
                     id=newId, 
                     order_id=orderId,
@@ -186,7 +189,7 @@ public class OrderService
                     product_price = newProductPrice,
                     tax_id = newTaxId,
                     variation_price = newVariationPrice,
-                    item_discount_amount = newItemDiscountAmount
+                    item_discount_amount = null
                 };
                 var addedItem = _orderRepository.AddOrderItem(newItem);
                 if(addedItem != null) RecalculateOrder(orderId);
