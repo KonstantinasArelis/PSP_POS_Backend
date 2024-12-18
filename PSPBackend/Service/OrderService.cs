@@ -68,7 +68,7 @@ public class OrderService
                 if(item.quantity != null && item.quantity != 0){
                     decimal quantity = (decimal) item.quantity;
                     var ItemBeforeDiscountAmount = quantity * ((item.product_price ?? 0m) + (item.variation_price ?? 0m));
-                    var ItemDiscountAmount = ItemBeforeDiscountAmount * (item.item_discount_amount ?? 0m);
+                    var ItemDiscountAmount = ItemBeforeDiscountAmount * ((item.item_discount_amount ?? 0m) / 100);
                     var ItemAfterDiscountBeforeTaxAmount = ItemBeforeDiscountAmount - ItemDiscountAmount;
                     var ItemTaxAmount = ItemAfterDiscountBeforeTaxAmount * (itemTax / 100);
                     var ItemAfterTaxAmount = ItemAfterDiscountBeforeTaxAmount + ItemTaxAmount;
@@ -97,6 +97,7 @@ public class OrderService
                 {
                     order.order_discount_percentage = obj.order_discount_percentage;
                     _orderRepository.UpdateOrder(order); 
+                    RecalculateOrder(orderId);
                 }
                 catch(RuntimeBinderException){}
             }
@@ -104,7 +105,6 @@ public class OrderService
 
         public void UpdateOrderItemDiscount(int item_id, string bodyString)
         {
-            Console.WriteLine("LOG: Order service GetOrder");
             OrderItemModel? item = _orderRepository.GetOrderItem(item_id);
             if(item == null) return;
             dynamic? obj = JsonConvert.DeserializeObject<dynamic>(bodyString);
@@ -114,6 +114,7 @@ public class OrderService
                 {
                     item.item_discount_amount = obj.item_discount_amount;
                     _orderRepository.UpdateOrderItem(item); 
+                    RecalculateOrder(item.order_id);
                 }
                 catch(RuntimeBinderException){}
             }
